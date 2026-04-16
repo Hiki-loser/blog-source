@@ -16,15 +16,17 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20
 
       - name: Install dependencies
-        run: npm install
+        run: |
+          rm -rf node_modules package-lock.json
+          npm install
 
       - name: Generate static files
         run: npx hexo generate
 
-      - name: Deploy to GitHub Pages
+      - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
           personal_token: ${{ secrets.GH_TOKEN }}
