@@ -3,7 +3,7 @@
 
 # Site Info
 author: John Doe
-author_description: 前端开发者 | ACG 爱好者
+author_description: 后端开发者 | ACG 爱好者
 avatar: /img/avatar.jpg
 
 # Social Links
@@ -25,7 +25,7 @@ home:
   # Daily image API
   daily_image:
     enable: true
-    api: https://api.i-meto.com/akari/daily # ACG image API
+    api: https://uapis.cn/api/v1/random/image?category=acg&type=pc # ACG image API
     alt_text: "每日ACG美图"
 
 # Music Player (Optional)
