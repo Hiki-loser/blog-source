@@ -14,7 +14,7 @@ const imageId = 'daily-image-photo';
       id="<%= imageId %>"
       src="<%= dailyImageApi %>"
       alt="<%= altText %>"
-      class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out"
+      class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out opacity-0"
       loading="lazy"
       decoding="async"
       onload="this.style.opacity='1'"
@@ -46,6 +46,9 @@ const imageId = 'daily-image-photo';
       </svg>
     </button>
   <% } %>
+
+  <!-- Hover Glow Effect -->
+  <div class="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary-500/20 to-secondary-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 </div>
 
 <style>

@@ -3,17 +3,21 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: Hexo
-subtitle: ''
-description: ''
+title: 个人博客
+subtitle: 记录生活与技术
+description: 分享前端开发、ACG 文化和生活感悟
 keywords:
-author: John Doe
-language: en
-timezone: ''
+  - 前端开发
+  - ACG
+  - 技术博客
+  - 生活感悟
+author: 博主名称
+language: zh-CN
+timezone: Asia/Shanghai
 
 # URL
 ## Set your site url here. For example, if you use GitHub Page, set url as 'https://username.github.io/project'
-url: http://example.com
+url: http://localhost:4000
 permalink: :year/:month/:day/:title/
 permalink_defaults:
 pretty_urls:
@@ -40,7 +44,7 @@ external_link:
   exclude: ''
 filename_case: 0
 render_drafts: false
-post_asset_folder: false
+post_asset_folder: true
 relative_link: false
 future: true
 syntax_highlighter: highlight.js
@@ -65,7 +69,7 @@ index_generator:
   order_by: -date
 
 # Category & Tag
-default_category: uncategorized
+default_category: 技术
 category_map:
 tag_map:
 
@@ -102,3 +106,62 @@ theme: akari
 ## Docs: https://hexo.io/docs/one-command-deployment
 deploy:
   type: ''
+
+# Akari Theme Configuration
+akari:
+  site:
+    title: 个人博客
+    subtitle: 记录生活与技术
+    description: 分享前端开发、ACG 文化和生活感悟
+    keywords:
+      - 前端开发
+      - ACG
+      - 技术博客
+      - 生活感悟
+    author: 博主名称
+    author_description: 前端开发者 | ACG 爱好者
+    avatar: /img/avatar.svg
+    since: 2024
+  nav:
+    - name: 首页
+      path: /
+    - name: 归档
+      path: /archives
+    - name: 分类
+      path: /categories
+    - name: 标签
+      path: /tags
+    - name: 关于
+      path: /about
+  social:
+    github: https://github.com/yourname
+    email: mailto:your.email@example.com
+    bilibili: https://space.bilibili.com/yourid
+  home:
+    featured_count: 3
+    daily_image:
+      enable: true
+      api: https://api.i-meto.com/akari/daily
+      alt_text: 每日 ACG 美图
+      refresh: true
+    stats:
+      enable: true
+  dark_mode:
+    enable: true
+    default: auto
+  music:
+    enable: false
+    type: netease
+    playlist_id: ''
+    auto: false
+  comment:
+    enable: false
+    type: giscus
+    giscus:
+      repo: ''
+      repo_id: ''
+      category: ''
+      category_id: ''
+  footer:
+    since: 2024
+    additional: 保持热爱，奔赴山海

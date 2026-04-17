@@ -1,5 +1,6 @@
 hexo.extend.helper.register('akari_config', function () {
   const siteData = (hexo.site && hexo.site.data && hexo.site.data.akari) || {};
+  const categoriesData = (hexo.site && hexo.site.data && hexo.site.data.categories) || {};
   const themeConfig = hexo.theme && hexo.theme.config ? hexo.theme.config : {};
   const siteConfig = hexo.config || {};
   const currentYear = new Date().getFullYear();
@@ -67,7 +68,8 @@ hexo.extend.helper.register('akari_config', function () {
     footer: {
       since: currentYear,
       additional: ''
-    }
+    },
+    categories: {}
   };
 
   function isPlainObject(value) {
@@ -102,5 +104,12 @@ hexo.extend.helper.register('akari_config', function () {
         .map((keyword) => keyword.trim())
         .filter(Boolean);
 
+  merged.categories = categoriesData;
+
   return merged;
+});
+
+hexo.extend.helper.register('get_category_structure', function () {
+  const categoriesData = (hexo.site && hexo.site.data && hexo.site.data.categories) || {};
+  return categoriesData;
 });
