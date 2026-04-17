@@ -9,10 +9,9 @@ technology:
     java:
       name: Java
       description: Java 技术栈
-    # 如需新增分类，只需在此添加，例如：
-    # database:
-    #   name: Database
-    #   description: 数据库技术
+    database:
+      name: Database
+      description: 数据库技术
 
 essay:
   name: 随笔
