@@ -4,6 +4,7 @@ const author = akari.site?.author || config.author || 'John Doe';
 const authorDesc = akari.site?.author_description || '保持热爱，奔赴山海';
 const avatar = akari.site?.avatar || '/img/avatar.svg';
 const statsEnabled = akari.home?.stats?.enable !== false;
+const profileText = akari.ui?.profile || {};
 
 function collectionCount(collection) {
   if (!collection) return 0;
@@ -46,17 +47,17 @@ const tagCount = collectionCount(site.tags);
       <div class="flex items-center justify-between py-3 border-t border-gray-100 dark:border-gray-700">
         <div class="text-center">
           <div class="text-lg font-bold text-primary-600 dark:text-primary-400"><%= postCount %></div>
-          <div class="text-xs text-gray-500 dark:text-gray-400">文章</div>
+          <div class="text-xs text-gray-500 dark:text-gray-400"><%= profileText.posts || '文章' %></div>
         </div>
         <div class="w-px h-8 bg-gray-200 dark:bg-gray-700"></div>
         <div class="text-center">
           <div class="text-lg font-bold text-secondary-600 dark:text-secondary-400"><%= categoryCount %></div>
-          <div class="text-xs text-gray-500 dark:text-gray-400">分类</div>
+          <div class="text-xs text-gray-500 dark:text-gray-400"><%= profileText.categories || '分类' %></div>
         </div>
         <div class="w-px h-8 bg-gray-200 dark:bg-gray-700"></div>
         <div class="text-center">
           <div class="text-lg font-bold text-accent-600 dark:text-accent-400"><%= tagCount %></div>
-          <div class="text-xs text-gray-500 dark:text-gray-400">标签</div>
+          <div class="text-xs text-gray-500 dark:text-gray-400"><%= profileText.tags || '标签' %></div>
         </div>
       </div>
     <% } %>

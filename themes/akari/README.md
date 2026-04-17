@@ -34,7 +34,7 @@ git clone https://github.com/yourname/hexo-theme-akari.git themes/akari
 theme: akari
 ```
 
-统一配置请优先编辑 `source/_data/akari.yml`，主题会自动读取并与 `themes/akari/_config.yml` 的默认值合并。
+统一配置请优先编辑 Hexo 根目录 `_config.yml` 中的 `akari` 字段。
 
 ---
 
@@ -62,7 +62,7 @@ themes/akari/
 
 ## 配置
 
-推荐在 `source/_data/akari.yml` 中管理站点信息、导航、社交、功能开关等配置。
+推荐在 Hexo 根目录 `_config.yml` 的 `akari` 字段中管理站点信息、导航、社交、功能开关等配置。
 
 ```yaml
 site:
@@ -92,15 +92,19 @@ social:
   github: https://github.com/yourname
   email: mailto:your.email@example.com
 
-home:
+akari:
+  home:
   featured_count: 3
   daily_image:
     enable: true
-    api: https://api.i-meto.com/akari/daily
+    api: https://uapis.cn/api/v1/random/image?category=acg&type=pc
     alt_text: 每日 ACG 美图
     refresh: true
-  stats:
-    enable: true
+    background_image:
+      enable: true
+      api: https://uapis.cn/api/v1/random/image?category=landscape
+    stats:
+      enable: true
 
 dark_mode:
   enable: true
@@ -171,7 +175,7 @@ git clone https://github.com/yourname/hexo-theme-akari.git themes/akari
 theme: akari
 ```
 
-统一配置请优先编辑 `source/_data/akari.yml`，主题会自动读取并与 `themes/akari/_config.yml` 的默认值合并。
+统一配置请优先编辑 Hexo 根目录 `_config.yml` 中的 `akari` 字段。
 
 ---
 
@@ -199,7 +203,7 @@ themes/akari/
 
 ## 配置
 
-推荐在 `source/_data/akari.yml` 中管理站点信息、导航、社交、功能开关等配置：
+推荐在 Hexo 根目录 `_config.yml` 的 `akari` 字段中管理站点信息、导航、社交、功能开关等配置：
 
 ```yaml
 site:
@@ -227,15 +231,19 @@ social:
   github: https://github.com/yourname
   email: mailto:your.email@example.com
 
-home:
+akari:
+  home:
   featured_count: 3
   daily_image:
     enable: true
-    api: https://api.i-meto.com/akari/daily
+    api: https://uapis.cn/api/v1/random/image?category=acg&type=pc
     alt_text: 每日 ACG 美图
     refresh: true
-  stats:
-    enable: true
+    background_image:
+      enable: true
+      api: https://uapis.cn/api/v1/random/image?category=landscape
+    stats:
+      enable: true
 
 dark_mode:
   enable: true
@@ -270,12 +278,13 @@ comment:
 
 ### 接入新的 ACG 图片 API
 
-编辑 `layout/partial/daily-image.ejs`，修改 API 地址：
+编辑 Hexo 根目录 `_config.yml` 的 `akari.home.daily_image.api`：
 
-```ejs
-<%
-const dailyImageApi = 'https://your-api.com/image';
-%>
+```yaml
+akari:
+  home:
+    daily_image:
+      api: https://your-api.com/image
 ```
 
 ### 添加新的社交链接

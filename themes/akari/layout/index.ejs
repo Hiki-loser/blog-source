@@ -17,7 +17,7 @@ const siteKeywords = Array.isArray(akari.site?.keywords) ? akari.site.keywords.j
   <title><%= siteTitle %></title>
 
   <!-- Favicon -->
-  <link rel="icon" href="<%- url_for('/img/favicon.ico') %>">
+  <link rel="icon" type="image/svg+xml" href="<%- url_for('/img/favicon.svg') %>">
 
   <!-- TailwindCSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -65,7 +65,7 @@ const siteKeywords = Array.isArray(akari.site?.keywords) ? akari.site.keywords.j
   <!-- Custom CSS -->
   <link rel="stylesheet" href="<%- url_for('/css/style.css') %>">
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300" style="--background-image-api: <%= akari.home?.background_image?.api || '' %>;">
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300" style="--background-image-api: url('<%= akari.home?.background_image?.api || 'https://uapis.cn/api/v1/random/image?category=landscape' %>');">
 
 <div class="min-h-screen">
   <!-- Header / Navigation -->

@@ -4,6 +4,8 @@ const siteTitle = akari.site?.title || config.title || 'Hexo';
 const siteDescription = page.excerpt || page.description || (page.content ? page.content.substring(0, 200).replace(/<[^>]*>/g, '') : '');
 const siteKeywords = page.tags ? page.tags.map(function(t) { return t.name; }).join(',') : (Array.isArray(akari.site?.keywords) ? akari.site.keywords.join(',') : '');
 const commentsEnabled = akari.comment?.enable && page.comments !== false;
+const postText = akari.ui?.post || {};
+const locale = akari.site?.language || config.language || 'zh-CN';
 %>
 
 <!DOCTYPE html>
@@ -15,7 +17,7 @@ const commentsEnabled = akari.comment?.enable && page.comments !== false;
   <meta name="description" content="<%= siteDescription %>">
   <meta name="keywords" content="<%= siteKeywords %>">
   <title><%= page.title %> | <%= siteTitle %></title>
-  <link rel="icon" href="<%- url_for('/img/favicon.ico') %>">
+  <link rel="icon" type="image/svg+xml" href="<%- url_for('/img/favicon.svg') %>">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -55,7 +57,7 @@ const commentsEnabled = akari.comment?.enable && page.comments !== false;
     .prose th { background: rgba(214, 117, 255, 0.1); font-weight: 600; }
   </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300" style="--background-image-api: <%= akari.home?.background_image?.api || '' %>;">
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300" style="--background-image-api: url('<%= akari.home?.background_image?.api || 'https://uapis.cn/api/v1/random/image?category=landscape' %>');">
 
 <article class="min-h-screen">
   <%- partial('partial/header') %>
@@ -63,7 +65,7 @@ const commentsEnabled = akari.comment?.enable && page.comments !== false;
   <main class="container mx-auto px-4 py-8 max-w-4xl">
     <a href="<%- url_for('/') %>" class="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors mb-6 group">
       <svg class="w-5 h-5 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-      <span class="font-medium">返回</span>
+      <span class="font-medium"><%= postText.back || '返回' %></span>
     </a>
 
     <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-700">
@@ -80,7 +82,7 @@ const commentsEnabled = akari.comment?.enable && page.comments !== false;
           <div class="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
             <time class="flex items-center gap-1.5">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-              <%= new Date(page.date).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' }) %>
+              <%= new Date(page.date).toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' }) %>
             </time>
 
             <% if (page.categories && page.categories.length > 0) { %>
@@ -111,13 +113,13 @@ const commentsEnabled = akari.comment?.enable && page.comments !== false;
           <div class="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4">
             <% if (page.prev) { %>
               <a href="<%- url_for(page.prev.path) %>" class="group p-5 rounded-2xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 hover:border-primary-300 dark:hover:border-primary-700 transition-all duration-200">
-                <div class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">上一篇</div>
+                <div class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2"><%= postText.prev_post || '上一篇' %></div>
                 <div class="font-semibold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 line-clamp-2"><%= page.prev.title %></div>
               </a>
             <% } %>
             <% if (page.next) { %>
               <a href="<%- url_for(page.next.path) %>" class="group p-5 rounded-2xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 hover:border-primary-300 dark:hover:border-primary-700 transition-all duration-200 sm:text-right">
-                <div class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">下一篇</div>
+                <div class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2"><%= postText.next_post || '下一篇' %></div>
                 <div class="font-semibold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 line-clamp-2"><%= page.next.title %></div>
               </a>
             <% } %>
@@ -130,8 +132,8 @@ const commentsEnabled = akari.comment?.enable && page.comments !== false;
               <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
             </div>
             <div class="flex-1 text-sm">
-              <p class="text-gray-700 dark:text-gray-300 font-medium mb-2">本文链接：<a href="<%- page.permalink %>" class="text-primary-600 dark:text-primary-400 break-all"><%- page.permalink %></a></p>
-              <p class="text-gray-600 dark:text-gray-400">版权声明：本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" class="text-primary-600 dark:text-primary-400">CC BY-NC-SA 4.0</a> 许可协议。转载请注明出处！</p>
+              <p class="text-gray-700 dark:text-gray-300 font-medium mb-2"><%= postText.permalink || '本文链接：' %><a href="<%- page.permalink %>" class="text-primary-600 dark:text-primary-400 break-all"><%- page.permalink %></a></p>
+              <p class="text-gray-600 dark:text-gray-400"><%= postText.copyright_prefix || '版权声明：本博客所有文章除特别声明外，均采用 ' %><a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" class="text-primary-600 dark:text-primary-400">CC BY-NC-SA 4.0</a><%= postText.copyright_suffix || ' 许可协议。转载请注明出处！' %></p>
             </div>
           </div>
         </div>

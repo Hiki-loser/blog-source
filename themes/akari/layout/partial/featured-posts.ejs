@@ -1,12 +1,17 @@
+<%
+const akari = akari_config();
+const homeText = akari.ui?.home || {};
+%>
+
 <section class="space-y-4">
   <!-- Section Header -->
   <div class="flex items-center justify-between">
     <h2 class="text-2xl font-bold flex items-center gap-2">
       <span class="w-1 h-8 bg-gradient-to-b from-primary-500 to-secondary-500 rounded-full"></span>
-      <span class="bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">最新文章</span>
+      <span class="bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent"><%= homeText.latest_posts_title || '最新文章' %></span>
     </h2>
     <a href="<%- url_for('/archives') %>" class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors flex items-center gap-1">
-      查看更多
+      <%= homeText.view_more || '查看更多' %>
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
       </svg>

@@ -1,3 +1,8 @@
+<%
+const akari = akari_config();
+const paginationText = akari.ui?.pagination || {};
+%>
+
 <% if (paginator && paginator.total > 1) { %>
 <nav class="flex items-center justify-center gap-2 mt-8 animate-fade-in">
   <% if (paginator.prev) { %>
@@ -8,7 +13,7 @@
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
       </svg>
-      上一页
+      <%= paginationText.prev || '上一页' %>
     </a>
   <% } %>
 
@@ -32,7 +37,7 @@
       href="<%- url_for(paginator.next) %>"
       class="flex items-center gap-1 px-4 py-2 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:text-primary-600 dark:hover:text-primary-400 hover:border-primary-300 dark:hover:border-primary-700 transition-all duration-200 font-medium"
     >
-      下一页
+      <%= paginationText.next || '下一页' %>
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
       </svg>

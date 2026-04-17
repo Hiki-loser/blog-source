@@ -3,6 +3,8 @@ const akari = akari_config();
 const commentConfig = akari.comment || {};
 const commentType = commentConfig.type || 'giscus';
 const commentEnabled = commentConfig.enable;
+const commentText = akari.ui?.comments || {};
+const locale = akari.site?.language || config.language || 'zh-CN';
 %>
 
 <% if (!commentEnabled) { return; } %>
@@ -12,7 +14,7 @@ const commentEnabled = commentConfig.enable;
     <svg class="w-6 h-6 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
     </svg>
-    评论
+    <%= commentText.title || '评论' %>
   </h2>
 
   <% if (commentType === 'giscus') { %>
@@ -39,7 +41,7 @@ const commentEnabled = commentConfig.enable;
   data-emit-metadata="0"
   data-input-position="bottom"
   data-theme="preferred_color_scheme"
-  data-lang="zh-CN"
+  data-lang="<%= locale %>"
   data-loading="lazy"
   crossorigin="anonymous"
   async>
@@ -53,9 +55,9 @@ const commentEnabled = commentConfig.enable;
     el: '#vcomments',
     appId: '<%= commentConfig.valine.appId %>',
     appKey: '<%= commentConfig.valine.appKey %>',
-    placeholder: '留下你的评论吧～',
+    placeholder: '<%= commentText.valine_placeholder || '留下你的评论吧～' %>',
     avatar: 'mp',
-    lang: 'zh-CN',
+    lang: '<%= locale %>',
     visitor: true,
     recordIP: true,
     pageSize: 10,
@@ -69,12 +71,12 @@ const commentEnabled = commentConfig.enable;
   repo="<%= commentConfig.utterances.repo %>"
   issue-term="pathname"
   theme="preferred-color-scheme"
-  label="💬 评论"
+  label="<%= commentText.utterances_label || '💬 评论' %>"
   crossorigin="anonymous"
   async>
 </script>
 <% } %>
 
 <% if ((commentType === 'giscus' && !commentConfig.giscus?.repo) || (commentType === 'valine' && (!commentConfig.valine?.appId || !commentConfig.valine?.appKey)) || (commentType === 'utterances' && !commentConfig.utterances?.repo)) { %>
-  <p class="mt-4 text-sm text-gray-500 dark:text-gray-400">评论功能已开启，但配置尚不完整，请补全 <code>source/_data/akari.yml</code> 中的评论配置。</p>
+  <p class="mt-4 text-sm text-gray-500 dark:text-gray-400"><%= commentText.incomplete_hint || '评论功能已开启，但配置尚不完整，请补全 _config.yml 中 akari.comment 配置。' %></p>
 <% } %>

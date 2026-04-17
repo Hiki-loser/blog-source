@@ -1,6 +1,8 @@
 <%
 const akari = akari_config();
 const siteTitle = akari.site?.title || config.title || 'Hexo';
+const archiveText = akari.ui?.archive || {};
+const locale = akari.site?.language || config.language || 'zh-CN';
 %>
 
 <!DOCTYPE html>
@@ -9,8 +11,8 @@ const siteTitle = akari.site?.title || config.title || 'Hexo';
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>归档 | <%= siteTitle %></title>
-  <link rel="icon" href="<%- url_for('/img/favicon.ico') %>">
+  <title><%= archiveText.page_title || '归档' %> | <%= siteTitle %></title>
+  <link rel="icon" type="image/svg+xml" href="<%- url_for('/img/favicon.svg') %>">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -29,15 +31,15 @@ const siteTitle = akari.site?.title || config.title || 'Hexo';
   </script>
   <link rel="stylesheet" href="<%- url_for('/css/style.css') %>">
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300" style="--background-image-api: <%= akari.home?.background_image?.api || '' %>;">
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300" style="--background-image-api: url('<%= akari.home?.background_image?.api || 'https://uapis.cn/api/v1/random/image?category=landscape' %>');">
 
 <div class="min-h-screen">
   <%- partial('partial/header') %>
 
   <main class="container mx-auto px-4 py-8 max-w-4xl">
     <div class="mb-8">
-      <h1 class="text-3xl font-bold mb-2 bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">文章归档</h1>
-      <p class="text-gray-600 dark:text-gray-400">记录每一刻的思考与成长</p>
+      <h1 class="text-3xl font-bold mb-2 bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent"><%= archiveText.title || '文章归档' %></h1>
+      <p class="text-gray-600 dark:text-gray-400"><%= archiveText.subtitle || '记录每一刻的思考与成长' %></p>
     </div>
 
     <div class="space-y-8">
@@ -50,7 +52,7 @@ const siteTitle = akari.site?.title || config.title || 'Hexo';
                 <h3 class="text-lg font-bold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors truncate"><%= post.title %></h3>
                 <% if (post.excerpt) { %><p class="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-1"><%- post.excerpt.replace(/<[^>]*>/g, '') %></p><% } %>
               </div>
-              <time class="flex-shrink-0 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap"><%= new Date(post.date).toLocaleDateString('zh-CN', { year: 'numeric', month: 'short', day: 'numeric' }) %></time>
+              <time class="flex-shrink-0 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap"><%= new Date(post.date).toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' }) %></time>
             </div>
           </a>
         </div>
