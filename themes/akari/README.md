@@ -71,7 +71,7 @@ site:
   description: ACG 与技术并行的个人博客
   keywords: [Hexo, ACG, Blog]
   author: John Doe
-  author_description: 前端开发者 | ACG 爱好者
+  author_description: 后端开发者 | ACG 爱好者
   avatar: /img/avatar.svg
   language: zh-CN
   since: 2024
