@@ -141,7 +141,7 @@ akari:
     featured_count: 3
     daily_image:
       enable: true
-      api: https://api.i-meto.com/akari/daily
+      api: https://api.kun.moe/api/v1/random/image?category=acg&type=pc
       alt_text: 每日 ACG 美图
       refresh: true
     stats:
