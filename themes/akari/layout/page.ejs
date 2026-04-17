@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="<%- typeof language !== 'undefined' ? language : 'zh-CN' %>">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title><%= page.title %> | <%= config.title %></title>
+  <link rel="icon" href="<%- url_for('/img/favicon.ico') %>">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: { 50: '#fef7ff', 100: '#faeeff', 200: '#f5dfff', 300: '#edc6ff', 400: '#e2a2ff', 500: '#d675ff', 600: '#c146ff', 700: '#a828f9', 800: '#8d1fd0', 900: '#751eaa', 950: '#4f0d7a' },
+            secondary: { 50: '#f5f3ff', 100: '#ede9fe', 200: '#ddd6fe', 300: '#c4b5fd', 400: '#a78bfa', 500: '#8b5cf6', 600: '#7c3aed', 700: '#6d28d9', 800: '#5b21b6', 900: '#4c1d95' },
+            accent: { 50: '#fdf4ff', 100: '#fae8ff', 200: '#f5d0fe', 300: '#f0abfc', 400: '#e879f9', 500: '#d946ef', 600: '#c026d3', 700: '#a21caf', 800: '#86198f', 900: '#701a75' }
+          },
+          fontFamily: { sans: ['-apple-system', 'BlinkMacSystemFont', 'Helvetica Neue', 'Helvetica', 'Arial', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="<%- url_for('/css/style.css') %>">
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300">
+
+<div class="min-h-screen">
+  <%- partial('partial/header') %>
+
+  <main class="container mx-auto px-4 py-8 max-w-4xl">
+    <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-700">
+      <div class="h-48 bg-gradient-to-r from-primary-500 via-secondary-500 to-accent-500 relative">
+        <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-30"></div>
+      </div>
+
+      <div class="p-8 sm:p-12">
+        <h1 class="text-3xl sm:text-4xl font-bold mb-6 bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent"><%= page.title %></h1>
+
+        <div class="prose prose-lg dark:prose-invert max-w-none">
+          <%- page.content %>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <%- partial('partial/footer') %>
+</div>
+
+<script src="<%- url_for('/js/dark-mode.js') %>"></script>
+</body>
+</html>

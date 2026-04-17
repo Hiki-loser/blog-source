@@ -1,0 +1,67 @@
+<%
+const author = theme.author || config.author || 'John Doe';
+const authorDesc = theme.author_description || '保持热爱，奔赴山海';
+const avatar = theme.avatar || '/img/avatar.svg';
+%>
+
+<div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-700 animate-fade-in">
+  <!-- Background Gradient -->
+  <div class="h-24 bg-gradient-to-r from-primary-500 via-secondary-500 to-accent-500"></div>
+
+  <!-- Avatar -->
+  <div class="relative px-6 -mt-12">
+    <div class="w-24 h-24 rounded-2xl overflow-hidden border-4 border-white dark:border-gray-800 shadow-lg transform hover:scale-105 transition-transform duration-300">
+      <img
+        src="<%= avatar %>"
+        alt="<%= author %>"
+        class="w-full h-full object-cover"
+        onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect fill=%22%23d675ff%22 width=%22100%22 height=%22100%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22sans-serif%22 font-size=%2240%22 fill=%22white%22%3E<%= author.charAt(0).toUpperCase() %>%3C/text%3E%3C/svg%3E'"
+      />
+    </div>
+  </div>
+
+  <!-- Info -->
+  <div class="px-6 pb-6 pt-2">
+    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-1">
+      <%= author %>
+    </h3>
+    <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+      <%= authorDesc %>
+    </p>
+
+    <!-- Stats (Optional) -->
+    <div class="flex items-center justify-between py-3 border-t border-gray-100 dark:border-gray-700">
+      <div class="text-center">
+        <div class="text-lg font-bold text-primary-600 dark:text-primary-400" id="post-count">0</div>
+        <div class="text-xs text-gray-500 dark:text-gray-400">文章</div>
+      </div>
+      <div class="w-px h-8 bg-gray-200 dark:bg-gray-700"></div>
+      <div class="text-center">
+        <div class="text-lg font-bold text-secondary-600 dark:text-secondary-400" id="category-count">0</div>
+        <div class="text-xs text-gray-500 dark:text-gray-400">分类</div>
+      </div>
+      <div class="w-px h-8 bg-gray-200 dark:bg-gray-700"></div>
+      <div class="text-center">
+        <div class="text-lg font-bold text-accent-600 dark:text-accent-400" id="tag-count">0</div>
+        <div class="text-xs text-gray-500 dark:text-gray-400">标签</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Update stats dynamically
+  document.addEventListener('DOMContentLoaded', function() {
+    const postCount = document.querySelectorAll('article').length || <%= site.posts.length %>;
+    const categoryCount = document.querySelectorAll('[data-category]').length || <%= site.categories.length %>;
+    const tagCount = document.querySelectorAll('[data-tag]').length || <%= site.tags.length %>;
+
+    const postEl = document.getElementById('post-count');
+    const categoryEl = document.getElementById('category-count');
+    const tagEl = document.getElementById('tag-count');
+
+    if (postEl) postEl.textContent = postCount;
+    if (categoryEl) categoryEl.textContent = categoryCount;
+    if (tagEl) tagEl.textContent = tagCount;
+  });
+</script>

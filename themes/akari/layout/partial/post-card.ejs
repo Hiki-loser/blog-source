@@ -1,0 +1,50 @@
+<%
+const p = typeof post !== 'undefined' ? post : (typeof page !== 'undefined' ? page : null);
+if (!p) return;
+const postUrl = p.permalink || url_for(p.path);
+const coverImage = p.cover || p.thumbnail || '';
+const categories = p.categories ? (typeof p.categories.toArray === 'function' ? p.categories.toArray() : []) : [];
+const tags = p.tags ? (typeof p.tags.toArray === 'function' ? p.tags.toArray() : []) : [];
+%>
+
+<article class="group bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-xl hover:shadow-primary-500/10 transition-all duration-300 overflow-hidden border border-gray-100 dark:border-gray-700">
+  <div class="flex flex-col sm:flex-row gap-0 sm:gap-4 p-4 sm:p-5">
+    <% if (coverImage) { %>
+      <div class="sm:w-48 h-40 sm:h-32 flex-shrink-0 overflow-hidden rounded-xl">
+        <img src="<%= coverImage %>" alt="<%= p.title %>" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500" />
+      </div>
+    <% } %>
+
+    <div class="flex-1 min-w-0 space-y-3">
+      <a href="<%= postUrl %>" class="block group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+        <h3 class="text-lg font-bold line-clamp-2 group-hover:translate-x-1 transition-transform duration-200"><%= p.title %></h3>
+      </a>
+
+      <p class="text-gray-600 dark:text-gray-400 text-sm line-clamp-2 leading-relaxed">
+        <% if (p.excerpt) { %>
+          <%- p.excerpt.replace(/<[^>]*>/g, '') %>
+        <% } else if (p.description) { %>
+          <%= p.description %>
+        <% } else if (p.content) { %>
+          <%= p.content.replace(/<[^>]*>/g, '').substring(0, 150) %>...
+        <% } %>
+      </p>
+
+      <div class="flex items-center justify-between pt-2">
+        <div class="flex items-center gap-2 flex-wrap">
+          <% if (categories.length > 0) { %>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400"><%= categories[0].name %></span>
+          <% } %>
+          <% if (tags.length > 0) { %>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-400"><%= tags[0].name %></span>
+          <% } %>
+        </div>
+
+        <time class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+          <%= new Date(p.date).toLocaleDateString('zh-CN', { year: 'numeric', month: 'short', day: 'numeric' }) %>
+        </time>
+      </div>
+    </div>
+  </div>
+</article>

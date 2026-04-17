@@ -1,0 +1,57 @@
+# Akari Theme Configuration
+# ACG Style Hexo Theme
+
+# Site Info
+author: John Doe
+author_description: 前端开发者 | ACG 爱好者
+avatar: /img/avatar.jpg
+
+# Social Links
+social:
+  github: https://github.com/yourname
+  email: mailto:your.email@example.com
+  twitter: https://twitter.com/yourname
+  bilibili: https://space.bilibili.com/yourid
+
+# Dark Mode
+dark_mode:
+  enable: true
+  default: auto # auto, light, dark
+
+# Home Page
+home:
+  # Featured posts count
+  featured_count: 3
+  # Daily image API
+  daily_image:
+    enable: true
+    api: https://api.i-meto.com/akari/daily # ACG image API
+    alt_text: "每日ACG美图"
+
+# Music Player (Optional)
+music:
+  enable: false
+  type: netease # netease, spotify, custom
+  playlist_id: "" # Your playlist ID
+
+# Comment System
+comment:
+  enable: false
+  type: giscus # giscus, valine, utterances
+  # Giscus config
+  giscus:
+    repo: ""
+    repo_id: ""
+    category: ""
+    category_id: ""
+
+# Analytics
+analytics:
+  enable: false
+  type: google # google, baidu, umami
+  id: ""
+
+# Footer
+footer:
+  since: 2024
+  additional: ""

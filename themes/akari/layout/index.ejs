@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="<%- typeof language !== 'undefined' ? language : 'zh-CN' %>">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="description" content="<%= config.description %>">
+  <meta name="keywords" content="<%= typeof keywords !== 'undefined' ? keywords : '' %>">
+
+  <title><%= config.title %></title>
+
+  <!-- Favicon -->
+  <link rel="icon" href="<%- url_for('/img/favicon.ico') %>">
+
+  <!-- TailwindCSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#fef7ff', 100: '#faeeff', 200: '#f5dfff', 300: '#edc6ff',
+              400: '#e2a2ff', 500: '#d675ff', 600: '#c146ff', 700: '#a828f9',
+              800: '#8d1fd0', 900: '#751eaa', 950: '#4f0d7a'
+            },
+            secondary: {
+              50: '#f5f3ff', 100: '#ede9fe', 200: '#ddd6fe', 300: '#c4b5fd',
+              400: '#a78bfa', 500: '#8b5cf6', 600: '#7c3aed', 700: '#6d28d9',
+              800: '#5b21b6', 900: '#4c1d95'
+            },
+            accent: {
+              50: '#fdf4ff', 100: '#fae8ff', 200: '#f5d0fe', 300: '#f0abfc',
+              400: '#e879f9', 500: '#d946ef', 600: '#c026d3', 700: '#a21caf',
+              800: '#86198f', 900: '#701a75'
+            }
+          },
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', 'Helvetica Neue', 'Helvetica', 'Arial', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'sans-serif']
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.5s ease-out',
+            'slide-up': 'slideUp 0.5s ease-out',
+            'scale-in': 'scaleIn 0.3s ease-out'
+          },
+          keyframes: {
+            fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+            slideUp: { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } },
+            slideDown: { '0%': { transform: 'translateY(-20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } },
+            scaleIn: { '0%': { transform: 'scale(0.95)', opacity: '0' }, '100%': { transform: 'scale(1)', opacity: '1' } }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="<%- url_for('/css/style.css') %>">
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300">
+
+<div class="min-h-screen">
+  <!-- Header / Navigation -->
+  <%- partial('partial/header') %>
+
+  <!-- Main Content -->
+  <main class="container mx-auto px-4 py-8 max-w-7xl">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Left Main Area -->
+      <div class="lg:col-span-2 space-y-8">
+        <!-- Daily Image / Hero Section -->
+        <% if (theme.home && theme.home.daily_image && theme.home.daily_image.enable) { %>
+          <%- partial('partial/daily-image') %>
+        <% } %>
+
+        <!-- Featured Posts -->
+        <%- partial('partial/featured-posts') %>
+      </div>
+
+      <!-- Right Sidebar -->
+      <div class="space-y-6">
+        <!-- Profile Card -->
+        <%- partial('partial/profile-card') %>
+
+        <!-- Social Links -->
+        <%- partial('partial/social-links') %>
+
+        <!-- Categories -->
+        <%- partial('partial/categories') %>
+
+        <!-- Tags -->
+        <%- partial('partial/tags') %>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <%- partial('partial/footer') %>
+
+  <!-- Music Player -->
+  <%- partial('partial/music-player') %>
+</div>
+
+<!-- Scripts -->
+<script src="<%- url_for('/js/dark-mode.js') %>"></script>
+<script>
+  // Mobile menu toggle
+  document.getElementById('mobile-menu-button')?.addEventListener('click', function() {
+    const menu = document.getElementById('mobile-menu');
+    menu?.classList.toggle('hidden');
+  });
+</script>
+</body>
+</html>

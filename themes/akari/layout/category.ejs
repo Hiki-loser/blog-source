@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="<%- typeof language !== 'undefined' ? language : 'zh-CN' %>">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>分类 | <%= config.title %></title>
+  <link rel="icon" href="<%- url_for('/img/favicon.ico') %>">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: { 50: '#fef7ff', 100: '#faeeff', 200: '#f5dfff', 300: '#edc6ff', 400: '#e2a2ff', 500: '#d675ff', 600: '#c146ff', 700: '#a828f9', 800: '#8d1fd0', 900: '#751eaa', 950: '#4f0d7a' },
+            secondary: { 50: '#f5f3ff', 100: '#ede9fe', 200: '#ddd6fe', 300: '#c4b5fd', 400: '#a78bfa', 500: '#8b5cf6', 600: '#7c3aed', 700: '#6d28d9', 800: '#5b21b6', 900: '#4c1d95' },
+            accent: { 50: '#fdf4ff', 100: '#fae8ff', 200: '#f5d0fe', 300: '#f0abfc', 400: '#e879f9', 500: '#d946ef', 600: '#c026d3', 700: '#a21caf', 800: '#86198f', 900: '#701a75' }
+          },
+          fontFamily: { sans: ['-apple-system', 'BlinkMacSystemFont', 'Helvetica Neue', 'Helvetica', 'Arial', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="<%- url_for('/css/style.css') %>">
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300">
+
+<div class="min-h-screen">
+  <%- partial('partial/header') %>
+
+  <main class="container mx-auto px-4 py-8 max-w-4xl">
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold mb-2 bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">分类</h1>
+      <p class="text-gray-600 dark:text-gray-400">探索不同主题的文章</p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <% site.categories.forEach(function(category) { %>
+        <a href="<%- url_for(category.path) %>" class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-500/10 via-secondary-500/10 to-accent-500/10 dark:from-primary-900/20 dark:via-secondary-900/20 dark:to-accent-900/20 border border-gray-100 dark:border-gray-700 p-6 hover:shadow-xl hover:shadow-primary-500/10 transition-all duration-300">
+          <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-gradient-to-br from-primary-500/20 to-secondary-500/20 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500"></div>
+          <div class="relative">
+            <div class="flex items-center justify-between mb-3">
+              <svg class="w-8 h-8 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+              <span class="px-3 py-1 rounded-full text-sm font-bold bg-gradient-to-r from-primary-500 to-secondary-500 text-white"><%= category.length %> 篇</span>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors"><%= category.name %></h3>
+          </div>
+        </a>
+      <% }); %>
+    </div>
+  </main>
+
+  <%- partial('partial/footer') %>
+</div>
+
+<script src="<%- url_for('/js/dark-mode.js') %>"></script>
+</body>
+</html>

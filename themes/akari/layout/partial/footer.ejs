@@ -1,0 +1,45 @@
+<%
+const since = theme.footer?.since || new Date().getFullYear();
+const currentYear = new Date().getFullYear();
+const additional = theme.footer?.additional || '';
+%>
+
+<footer class="mt-16 border-t border-gray-200 dark:border-gray-800">
+  <div class="container mx-auto px-4 max-w-7xl py-8">
+    <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+      <!-- Left: Copyright -->
+      <div class="text-sm text-gray-600 dark:text-gray-400">
+        <p>
+          &copy; <%= since %><%= since !== currentYear ? '-' + currentYear : '' %>
+          <a href="<%- url_for('/') %>" class="hover:text-primary-500 transition-colors font-medium">
+            <%= config.title %>
+          </a>
+          . All rights reserved.
+        </p>
+        <% if (additional) { %>
+          <p class="mt-1 text-xs"><%= additional %></p>
+        <% } %>
+      </div>
+
+      <!-- Right: Powered by -->
+      <div class="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+        <span>Powered by</span>
+        <a
+          href="https://hexo.io/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gradient-to-r from-primary-100 to-secondary-100 dark:from-primary-900/30 dark:to-secondary-900/30 text-primary-700 dark:text-primary-400 hover:from-primary-500 hover:to-secondary-500 hover:text-white transition-all duration-200 font-medium"
+        >
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+          </svg>
+          Hexo
+        </a>
+        <span>&</span>
+        <span class="px-2.5 py-1 rounded-lg bg-gradient-to-r from-accent-100 to-primary-100 dark:from-accent-900/30 dark:to-primary-900/30 text-accent-700 dark:text-accent-400 font-medium">
+          Akari Theme
+        </span>
+      </div>
+    </div>
+  </div>
+</footer>
