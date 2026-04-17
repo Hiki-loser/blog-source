@@ -1,0 +1,70 @@
+site:
+  title: Hexo
+  subtitle: ''
+  description: ACG 与技术并行的个人博客
+  keywords:
+    - Hexo
+    - ACG
+    - Blog
+  author: John Doe
+  author_description: 前端开发者 | ACG 爱好者
+  avatar: /img/avatar.svg
+  language: zh-CN
+  since: 2024
+
+nav:
+  - name: 首页
+    path: /
+  - name: 归档
+    path: /archives
+  - name: 分类
+    path: /categories
+  - name: 标签
+    path: /tags
+  - name: 关于
+    path: /about
+
+social:
+  github: https://github.com/yourname
+  email: mailto:your.email@example.com
+  twitter: https://twitter.com/yourname
+  bilibili: https://space.bilibili.com/yourid
+
+home:
+  featured_count: 3
+  daily_image:
+    enable: true
+    api: https://api.i-meto.com/akari/daily
+    alt_text: 每日 ACG 美图
+    refresh: true
+  stats:
+    enable: true
+
+dark_mode:
+  enable: true
+  default: auto
+
+music:
+  enable: false
+  type: netease
+  playlist_id: ''
+  auto: false
+  custom_html: ''
+
+comment:
+  enable: false
+  type: giscus
+  giscus:
+    repo: ''
+    repo_id: ''
+    category: ''
+    category_id: ''
+  valine:
+    appId: ''
+    appKey: ''
+  utterances:
+    repo: ''
+
+footer:
+  since: 2024
+  additional: ''

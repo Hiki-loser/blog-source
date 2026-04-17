@@ -1,7 +1,10 @@
 <%
-const since = theme.footer?.since || new Date().getFullYear();
+const akari = akari_config();
+const siteTitle = akari.site?.title || config.title || 'Hexo';
+const since = akari.footer?.since || akari.site?.since || new Date().getFullYear();
 const currentYear = new Date().getFullYear();
-const additional = theme.footer?.additional || '';
+const additional = akari.footer?.additional || '';
+const showPoweredBy = akari.footer?.show_powered_by !== false;
 %>
 
 <footer class="mt-16 border-t border-gray-200 dark:border-gray-800">
@@ -12,7 +15,7 @@ const additional = theme.footer?.additional || '';
         <p>
           &copy; <%= since %><%= since !== currentYear ? '-' + currentYear : '' %>
           <a href="<%- url_for('/') %>" class="hover:text-primary-500 transition-colors font-medium">
-            <%= config.title %>
+            <%= siteTitle %>
           </a>
           . All rights reserved.
         </p>
@@ -22,6 +25,7 @@ const additional = theme.footer?.additional || '';
       </div>
 
       <!-- Right: Powered by -->
+      <% if (showPoweredBy) { %>
       <div class="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
         <span>Powered by</span>
         <a
@@ -40,6 +44,7 @@ const additional = theme.footer?.additional || '';
           Akari Theme
         </span>
       </div>
+      <% } %>
     </div>
   </div>
 </footer>

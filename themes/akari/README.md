@@ -10,20 +10,14 @@
 
 ## 特性
 
--   🎨 **ACG 风格设计** - 清新、轻量、二次元审美
--   🌙 **深色模式** - 自动/手动切换，保护视力
--   📱 **响应式布局** - 完美适配各种设备
--   ⚡ **高性能** - 优化的加载速度
--   🧩 **模块化设计** - 易于扩展和维护
--   🎵 **音乐播放器** - 支持网易云/Spotify
--   💬 **评论系统** - 支持 Giscus/Valine/Utterances
--   🖼️ **每日美图** - ACG 图片 API 集成
-
----
-
-## 预览
-
-![Preview](./screenshot.png)
+- 🎨 ACG 风格设计
+- 🌙 深色模式切换
+- 📱 响应式布局
+- ⚡ 轻量加载
+- 🧩 模块化组件
+- 🎵 音乐播放器
+- 💬 评论系统
+- 🖼️ 每日美图
 
 ---
 
@@ -34,11 +28,150 @@ cd your-hexo-blog
 git clone https://github.com/yourname/hexo-theme-akari.git themes/akari
 ```
 
-然后在 `_config.yml` 中设置主题：
+在 Hexo 根目录的 `_config.yml` 中启用主题：
 
 ```yaml
 theme: akari
 ```
+
+统一配置请优先编辑 `source/_data/akari.yml`，主题会自动读取并与 `themes/akari/_config.yml` 的默认值合并。
+
+---
+
+## 目录结构
+
+```text
+themes/akari/
+├── _config.yml
+├── layout/
+│   ├── index.ejs
+│   ├── post.ejs
+│   ├── page.ejs
+│   ├── archive.ejs
+│   ├── category.ejs
+│   ├── tag.ejs
+│   └── partial/
+├── source/
+│   ├── css/
+│   ├── js/
+│   └── img/
+└── scripts/
+```
+
+---
+
+## 配置
+
+推荐在 `source/_data/akari.yml` 中管理站点信息、导航、社交、功能开关等配置。
+
+```yaml
+site:
+  title: Hexo
+  subtitle: ''
+  description: ACG 与技术并行的个人博客
+  keywords: [Hexo, ACG, Blog]
+  author: John Doe
+  author_description: 前端开发者 | ACG 爱好者
+  avatar: /img/avatar.svg
+  language: zh-CN
+  since: 2024
+
+nav:
+  - name: 首页
+    path: /
+  - name: 归档
+    path: /archives
+  - name: 分类
+    path: /categories
+  - name: 标签
+    path: /tags
+  - name: 关于
+    path: /about
+
+social:
+  github: https://github.com/yourname
+  email: mailto:your.email@example.com
+
+home:
+  featured_count: 3
+  daily_image:
+    enable: true
+    api: https://api.i-meto.com/akari/daily
+    alt_text: 每日 ACG 美图
+    refresh: true
+  stats:
+    enable: true
+
+dark_mode:
+  enable: true
+  default: auto
+
+music:
+  enable: false
+  type: netease
+  playlist_id: ''
+  auto: false
+
+comment:
+  enable: false
+  type: giscus
+```
+
+---
+
+## 自定义
+
+- 修改配色：编辑 `source/css/style.css`
+- 添加自定义样式：在 `source/css/` 下新增文件并引入
+- 扩展组件：在 `layout/partial/` 下新增组件并引用
+
+---
+
+## 致谢
+
+- Hexo
+- Tailwind CSS
+- kun-touchgal-next# Akari - ACG 风格 Hexo 主题
+
+一个简洁、美观、可扩展的 ACG 风格 Hexo 博客主题。
+
+## Akari - ACG 风格 Hexo 主题
+
+一个简洁、美观、可扩展的 ACG 风格 Hexo 博客主题。
+
+![Akari Theme](https://img.shields.io/badge/version-1.0.0-primary)
+![Hexo](https://img.shields.io/badge/Hexo-%3E%3D5.0.0-red)
+![License](https://img.shields.io/badge/license-MIT-green)
+
+---
+
+## 特性
+
+- 🎨 ACG 风格设计
+- 🌙 深色模式切换
+- 📱 响应式布局
+- ⚡ 轻量加载
+- 🧩 模块化组件
+- 🎵 音乐播放器
+- 💬 评论系统
+- 🖼️ 每日美图
+
+---
+
+## 安装
+
+```bash
+cd your-hexo-blog
+git clone https://github.com/yourname/hexo-theme-akari.git themes/akari
+```
+
+在 Hexo 根目录的 `_config.yml` 中启用主题：
+
+```yaml
+theme: akari
+```
+
+统一配置请优先编辑 `source/_data/akari.yml`，主题会自动读取并与 `themes/akari/_config.yml` 的默认值合并。
 
 ---
 
@@ -46,138 +179,94 @@ theme: akari
 
 ```
 themes/akari/
-├── _config.yml              # 主题配置文件
+├── _config.yml
 ├── layout/
-│   ├── layout.ejs           # 基础布局模板
-│   ├── index.ejs            # 首页
-│   ├── post.ejs             # 文章页
-│   ├── page.ejs             # 单页 (关于页等)
-│   ├── archive.ejs          # 归档页
-│   ├── category.ejs         # 分类页
-│   ├── tag.ejs              # 标签页
+│   ├── index.ejs
+│   ├── post.ejs
+│   ├── page.ejs
+│   ├── archive.ejs
+│   ├── category.ejs
+│   ├── tag.ejs
 │   └── partial/
-│       ├── header.ejs       # 头部导航
-│       ├── footer.ejs       # 页脚
-│       ├── daily-image.ejs  # 每日美图
-│       ├── featured-posts.ejs # 精选文章
-│       ├── post-card.ejs    # 文章卡片
-│       ├── profile-card.ejs # 个人资料卡片
-│       ├── social-links.ejs # 社交链接
-│       ├── categories.ejs   # 分类列表
-│       ├── tags.ejs         # 标签列表
-│       ├── pagination.ejs   # 分页
-│       ├── comments.ejs     # 评论系统
-│       └── music-player.ejs # 音乐播放器
 ├── source/
 │   ├── css/
-│   │   └── style.css        # 主样式文件
 │   ├── js/
-│   │   └── dark-mode.js     # 深色模式切换
-│   └── img/                 # 图片资源
-│       ├── avatar.jpg       # 头像
-│       └── favicon.ico      # 网站图标
-└── scripts/                 # 扩展脚本
+│   └── img/
+└── scripts/
 ```
 
 ---
 
 ## 配置
 
-在 `themes/akari/_config.yml` 中配置主题：
-
-### 站点信息
+推荐在 `source/_data/akari.yml` 中管理站点信息、导航、社交、功能开关等配置：
 
 ```yaml
-author: John Doe
-author_description: 前端开发者 | ACG 爱好者
-avatar: /img/avatar.jpg
-```
+site:
+  title: Hexo
+  subtitle: ''
+  description: ACG 与技术并行的个人博客
+  keywords: [Hexo, ACG, Blog]
+  author: John Doe
+  author_description: 前端开发者 | ACG 爱好者
+  avatar: /img/avatar.svg
 
-### 社交链接
+nav:
+  - name: 首页
+    path: /
+  - name: 归档
+    path: /archives
+  - name: 分类
+    path: /categories
+  - name: 标签
+    path: /tags
+  - name: 关于
+    path: /about
 
-```yaml
 social:
   github: https://github.com/yourname
   email: mailto:your.email@example.com
-  twitter: https://twitter.com/yourname
-  bilibili: https://space.bilibili.com/yourid
-```
 
-### 深色模式
-
-```yaml
-dark_mode:
-  enable: true
-  default: auto # auto, light, dark
-```
-
-### 首页设置
-
-```yaml
 home:
   featured_count: 3
   daily_image:
     enable: true
     api: https://api.i-meto.com/akari/daily
-    alt_text: "每日 ACG 美图"
-```
+    alt_text: 每日 ACG 美图
+    refresh: true
+  stats:
+    enable: true
 
-### 音乐播放器
+dark_mode:
+  enable: true
+  default: auto
 
-```yaml
 music:
   enable: false
-  type: netease # netease, spotify, custom
-  playlist_id: "" # 你的歌单 ID
-  auto: false # 是否自动播放
-```
+  type: netease
+  playlist_id: ''
+  auto: false
 
-### 评论系统
-
-```yaml
 comment:
   enable: false
-  type: giscus # giscus, valine, utterances
-  giscus:
-    repo: "username/repo"
-    repo_id: ""
-    category: "General"
-    category_id: ""
+  type: giscus
 ```
 
 ---
 
 ## 自定义
 
-### 修改配色
-
-编辑 `source/css/style.css` 中的 Tailwind 配置：
-
-```js
-tailwind.config = {
-  theme: {
-    extend: {
-      colors: {
-        primary: { /* ... */ },
-        secondary: { /* ... */ },
-        accent: { /* ... */ }
-      }
-    }
-  }
-}
-```
-
-### 添加自定义样式
-
-在 `source/css/` 目录下创建新的 CSS 文件，然后在 `layout.ejs` 中引入。
-
-### 扩展组件
-
-在 `layout/partial/` 目录下创建新的组件文件，然后在需要的页面中引用。
+- 修改配色：编辑 `source/css/style.css`
+- 添加自定义样式：在 `source/css/` 下新增文件并引入
+- 扩展组件：在 `layout/partial/` 下新增组件并引用
 
 ---
 
-## 扩展开发指南
+## 致谢
+
+- Hexo
+- Tailwind CSS
+- kun-touchgal-next
 
 ### 接入新的 ACG 图片 API
 

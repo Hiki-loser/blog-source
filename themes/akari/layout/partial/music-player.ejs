@@ -1,5 +1,6 @@
 <%
-const musicConfig = theme.music || {};
+const akari = akari_config();
+const musicConfig = akari.music || {};
 if (!musicConfig.enable) return;
 %>
 
@@ -25,7 +26,7 @@ if (!musicConfig.enable) return;
       marginheight="0"
       width="330"
       height="86"
-      src="https://music.163.com/outchain/player?type=2&auto=<%= musicConfig.auto ? 1 : 0 %>&height=66&playlist_id=<%= musicConfig.playlist_id %>"
+      src="https://music.163.com/outchain/player?type=2&id=<%= musicConfig.playlist_id %>&auto=<%= musicConfig.auto ? 1 : 0 %>&height=66"
       class="fixed bottom-20 right-4 z-40 rounded-xl shadow-2xl hidden"
       id="netease-player"
     ></iframe>
@@ -56,6 +57,10 @@ if (!musicConfig.enable) return;
     const player = document.getElementById('netease-player');
     const toggleBtn = document.getElementById('music-toggle');
 
+    if (!player || !toggleBtn) {
+      return;
+    }
+
     if (player.classList.contains('hidden')) {
       player.classList.remove('hidden');
       player.classList.add('animate-scale-in');
@@ -69,6 +74,11 @@ if (!musicConfig.enable) return;
   // Show toggle button on scroll
   window.addEventListener('scroll', function() {
     const toggleBtn = document.getElementById('music-toggle');
+
+    if (!toggleBtn) {
+      return;
+    }
+
     if (window.scrollY > 300) {
       toggleBtn?.classList.remove('translate-y-2', 'opacity-0');
     } else {

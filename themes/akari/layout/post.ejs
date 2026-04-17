@@ -1,12 +1,20 @@
+<%
+const akari = akari_config();
+const siteTitle = akari.site?.title || config.title || 'Hexo';
+const siteDescription = page.excerpt || page.description || (page.content ? page.content.substring(0, 200).replace(/<[^>]*>/g, '') : '');
+const siteKeywords = page.tags ? page.tags.map(function(t) { return t.name; }).join(',') : (Array.isArray(akari.site?.keywords) ? akari.site.keywords.join(',') : '');
+const commentsEnabled = akari.comment?.enable && page.comments !== false;
+%>
+
 <!DOCTYPE html>
 <html lang="<%- typeof language !== 'undefined' ? language : 'zh-CN' %>">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="description" content="<%= page.excerpt || page.description || (page.content ? page.content.substring(0, 200).replace(/<[^>]*>/g, '') : '') %>">
-  <meta name="keywords" content="<%= page.tags ? page.tags.map(function(t) { return t.name; }).join(',') : '' %>">
-  <title><%= page.title %> | <%= config.title %></title>
+  <meta name="description" content="<%= siteDescription %>">
+  <meta name="keywords" content="<%= siteKeywords %>">
+  <title><%= page.title %> | <%= siteTitle %></title>
   <link rel="icon" href="<%- url_for('/img/favicon.ico') %>">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -99,6 +107,23 @@
           <%- page.content %>
         </div>
 
+        <% if (page.prev || page.next) { %>
+          <div class="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <% if (page.prev) { %>
+              <a href="<%- url_for(page.prev.path) %>" class="group p-5 rounded-2xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 hover:border-primary-300 dark:hover:border-primary-700 transition-all duration-200">
+                <div class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">上一篇</div>
+                <div class="font-semibold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 line-clamp-2"><%= page.prev.title %></div>
+              </a>
+            <% } %>
+            <% if (page.next) { %>
+              <a href="<%- url_for(page.next.path) %>" class="group p-5 rounded-2xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 hover:border-primary-300 dark:hover:border-primary-700 transition-all duration-200 sm:text-right">
+                <div class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">下一篇</div>
+                <div class="font-semibold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 line-clamp-2"><%= page.next.title %></div>
+              </a>
+            <% } %>
+          </div>
+        <% } %>
+
         <div class="mt-10 p-6 rounded-2xl bg-gradient-to-br from-primary-50 to-secondary-50 dark:from-primary-900/20 dark:to-secondary-900/20 border border-primary-100 dark:border-primary-800">
           <div class="flex items-start gap-4">
             <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center">
@@ -113,7 +138,7 @@
       </div>
     </div>
 
-    <% if (theme.comment && theme.comment.enable) { %>
+    <% if (commentsEnabled) { %>
       <div class="mt-10"><%- partial('partial/comments') %></div>
     <% } %>
   </main>
@@ -124,10 +149,6 @@
 
 <script src="<%- url_for('/js/dark-mode.js') %>"></script>
 <script>
-  document.getElementById('mobile-menu-button')?.addEventListener('click', function() {
-    const menu = document.getElementById('mobile-menu');
-    menu?.classList.toggle('hidden');
-  });
   document.addEventListener('DOMContentLoaded', function() {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {

@@ -1,6 +1,11 @@
 <%
-const commentType = theme.comment?.type || 'giscus';
+const akari = akari_config();
+const commentConfig = akari.comment || {};
+const commentType = commentConfig.type || 'giscus';
+const commentEnabled = commentConfig.enable;
 %>
+
+<% if (!commentEnabled) { return; } %>
 
 <div id="comments" class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 sm:p-8">
   <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
@@ -22,12 +27,12 @@ const commentType = theme.comment?.type || 'giscus';
   <% } %>
 </div>
 
-<% if (commentType === 'giscus' && theme.comment?.giscus) { %>
+<% if (commentType === 'giscus' && commentConfig.giscus) { %>
 <script src="https://giscus.app/client.js"
-  data-repo="<%= theme.comment.giscus.repo %>"
-  data-repo-id="<%= theme.comment.giscus.repo_id %>"
-  data-category="<%= theme.comment.giscus.category %>"
-  data-category-id="<%= theme.comment.giscus.category_id %>"
+  data-repo="<%= commentConfig.giscus.repo %>"
+  data-repo-id="<%= commentConfig.giscus.repo_id %>"
+  data-category="<%= commentConfig.giscus.category %>"
+  data-category-id="<%= commentConfig.giscus.category_id %>"
   data-mapping="pathname"
   data-strict="0"
   data-reactions-enabled="1"
@@ -41,13 +46,13 @@ const commentType = theme.comment?.type || 'giscus';
 </script>
 <% } %>
 
-<% if (commentType === 'valine' && theme.comment?.valine) { %>
+<% if (commentType === 'valine' && commentConfig.valine) { %>
 <script src="https://cdn.jsdelivr.net/npm/valine@1.5.1/dist/Valine.min.js"></script>
 <script>
   new Valine({
     el: '#vcomments',
-    appId: '<%= theme.comment.valine.appId %>',
-    appKey: '<%= theme.comment.valine.appKey %>',
+    appId: '<%= commentConfig.valine.appId %>',
+    appKey: '<%= commentConfig.valine.appKey %>',
     placeholder: '留下你的评论吧～',
     avatar: 'mp',
     lang: 'zh-CN',
@@ -59,13 +64,17 @@ const commentType = theme.comment?.type || 'giscus';
 </script>
 <% } %>
 
-<% if (commentType === 'utterances' && theme.comment?.utterances) { %>
+<% if (commentType === 'utterances' && commentConfig.utterances) { %>
 <script src="https://utteranc.es/client.js"
-  repo="<%= theme.comment.utterances.repo %>"
+  repo="<%= commentConfig.utterances.repo %>"
   issue-term="pathname"
   theme="preferred-color-scheme"
   label="💬 评论"
   crossorigin="anonymous"
   async>
 </script>
+<% } %>
+
+<% if ((commentType === 'giscus' && !commentConfig.giscus?.repo) || (commentType === 'valine' && (!commentConfig.valine?.appId || !commentConfig.valine?.appKey)) || (commentType === 'utterances' && !commentConfig.utterances?.repo)) { %>
+  <p class="mt-4 text-sm text-gray-500 dark:text-gray-400">评论功能已开启，但配置尚不完整，请补全 <code>source/_data/akari.yml</code> 中的评论配置。</p>
 <% } %>

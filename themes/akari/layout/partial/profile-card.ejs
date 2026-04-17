@@ -1,7 +1,20 @@
 <%
-const author = theme.author || config.author || 'John Doe';
-const authorDesc = theme.author_description || '保持热爱，奔赴山海';
-const avatar = theme.avatar || '/img/avatar.svg';
+const akari = akari_config();
+const author = akari.site?.author || config.author || 'John Doe';
+const authorDesc = akari.site?.author_description || '保持热爱，奔赴山海';
+const avatar = akari.site?.avatar || '/img/avatar.svg';
+const statsEnabled = akari.home?.stats?.enable !== false;
+
+function collectionCount(collection) {
+  if (!collection) return 0;
+  if (typeof collection.toArray === 'function') return collection.toArray().length;
+  if (typeof collection.length === 'number') return collection.length;
+  return 0;
+}
+
+const postCount = collectionCount(site.posts);
+const categoryCount = collectionCount(site.categories);
+const tagCount = collectionCount(site.tags);
 %>
 
 <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-700 animate-fade-in">
@@ -29,39 +42,23 @@ const avatar = theme.avatar || '/img/avatar.svg';
       <%= authorDesc %>
     </p>
 
-    <!-- Stats (Optional) -->
-    <div class="flex items-center justify-between py-3 border-t border-gray-100 dark:border-gray-700">
-      <div class="text-center">
-        <div class="text-lg font-bold text-primary-600 dark:text-primary-400" id="post-count">0</div>
-        <div class="text-xs text-gray-500 dark:text-gray-400">文章</div>
+    <% if (statsEnabled) { %>
+      <div class="flex items-center justify-between py-3 border-t border-gray-100 dark:border-gray-700">
+        <div class="text-center">
+          <div class="text-lg font-bold text-primary-600 dark:text-primary-400"><%= postCount %></div>
+          <div class="text-xs text-gray-500 dark:text-gray-400">文章</div>
+        </div>
+        <div class="w-px h-8 bg-gray-200 dark:bg-gray-700"></div>
+        <div class="text-center">
+          <div class="text-lg font-bold text-secondary-600 dark:text-secondary-400"><%= categoryCount %></div>
+          <div class="text-xs text-gray-500 dark:text-gray-400">分类</div>
+        </div>
+        <div class="w-px h-8 bg-gray-200 dark:bg-gray-700"></div>
+        <div class="text-center">
+          <div class="text-lg font-bold text-accent-600 dark:text-accent-400"><%= tagCount %></div>
+          <div class="text-xs text-gray-500 dark:text-gray-400">标签</div>
+        </div>
       </div>
-      <div class="w-px h-8 bg-gray-200 dark:bg-gray-700"></div>
-      <div class="text-center">
-        <div class="text-lg font-bold text-secondary-600 dark:text-secondary-400" id="category-count">0</div>
-        <div class="text-xs text-gray-500 dark:text-gray-400">分类</div>
-      </div>
-      <div class="w-px h-8 bg-gray-200 dark:bg-gray-700"></div>
-      <div class="text-center">
-        <div class="text-lg font-bold text-accent-600 dark:text-accent-400" id="tag-count">0</div>
-        <div class="text-xs text-gray-500 dark:text-gray-400">标签</div>
-      </div>
-    </div>
+    <% } %>
   </div>
 </div>
-
-<script>
-  // Update stats dynamically
-  document.addEventListener('DOMContentLoaded', function() {
-    const postCount = document.querySelectorAll('article').length || <%= site.posts.length %>;
-    const categoryCount = document.querySelectorAll('[data-category]').length || <%= site.categories.length %>;
-    const tagCount = document.querySelectorAll('[data-tag]').length || <%= site.tags.length %>;
-
-    const postEl = document.getElementById('post-count');
-    const categoryEl = document.getElementById('category-count');
-    const tagEl = document.getElementById('tag-count');
-
-    if (postEl) postEl.textContent = postCount;
-    if (categoryEl) categoryEl.textContent = categoryCount;
-    if (tagEl) tagEl.textContent = tagCount;
-  });
-</script>

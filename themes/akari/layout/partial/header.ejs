@@ -1,33 +1,33 @@
+<%
+const akari = akari_config();
+const siteTitle = akari.site?.title || config.title || 'Hexo';
+const navItems = Array.isArray(akari.nav) ? akari.nav : [];
+%>
+
 <header class="sticky top-0 z-50 backdrop-blur-md bg-white/80 dark:bg-gray-900/80 border-b border-gray-200 dark:border-gray-800">
   <div class="container mx-auto px-4 max-w-7xl">
     <div class="flex items-center justify-between h-16">
       <!-- Logo / Site Title -->
       <a href="<%- url_for('/') %>" class="flex items-center gap-3 group">
         <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-secondary-600 flex items-center justify-center transform group-hover:scale-105 transition-transform duration-300 shadow-lg shadow-primary-500/25">
-          <span class="text-white font-bold text-lg"><%= config.title.charAt(0).toUpperCase() %></span>
+          <span class="text-white font-bold text-lg"><%= siteTitle.charAt(0).toUpperCase() %></span>
         </div>
         <span class="text-xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent hidden sm:block">
-          <%= config.title %>
+          <%= siteTitle %>
         </span>
       </a>
 
       <!-- Navigation -->
       <nav class="hidden md:flex items-center gap-1">
-        <a href="<%- url_for('/') %>" class="px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-200 font-medium">
-          首页
-        </a>
-        <a href="<%- url_for('/archives') %>" class="px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-200 font-medium">
-          归档
-        </a>
-        <a href="<%- url_for('/categories') %>" class="px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-200 font-medium">
-          分类
-        </a>
-        <a href="<%- url_for('/tags') %>" class="px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-200 font-medium">
-          标签
-        </a>
-        <a href="<%- url_for('/about') %>" class="px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-200 font-medium">
-          关于
-        </a>
+        <% navItems.forEach(function(item) { %>
+          <a
+            href="<%- item.url || url_for(item.path || '/') %>"
+            <% if (item.external) { %>target="_blank" rel="noopener noreferrer"<% } %>
+            class="px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-200 font-medium"
+          >
+            <%= item.name %>
+          </a>
+        <% }); %>
       </nav>
 
       <!-- Right Actions -->
@@ -63,11 +63,15 @@
 
     <!-- Mobile Menu -->
     <div id="mobile-menu" class="md:hidden hidden pb-4 space-y-2">
-      <a href="<%- url_for('/') %>" class="block px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:text-primary-600 transition-all">首页</a>
-      <a href="<%- url_for('/archives') %>" class="block px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:text-primary-600 transition-all">归档</a>
-      <a href="<%- url_for('/categories') %>" class="block px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:text-primary-600 transition-all">分类</a>
-      <a href="<%- url_for('/tags') %>" class="block px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:text-primary-600 transition-all">标签</a>
-      <a href="<%- url_for('/about') %>" class="block px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:text-primary-600 transition-all">关于</a>
+      <% navItems.forEach(function(item) { %>
+        <a
+          href="<%- item.url || url_for(item.path || '/') %>"
+          <% if (item.external) { %>target="_blank" rel="noopener noreferrer"<% } %>
+          class="block px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:text-primary-600 transition-all"
+        >
+          <%= item.name %>
+        </a>
+      <% }); %>
     </div>
   </div>
 </header>

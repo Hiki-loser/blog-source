@@ -1,17 +1,24 @@
 <%
-const dailyImageApi = theme.home?.daily_image?.api || 'https://api.i-meto.com/akari/daily';
-const altText = theme.home?.daily_image?.alt_text || '每日 ACG 美图';
+const akari = akari_config();
+const dailyImage = akari.home?.daily_image || {};
+const dailyImageApi = dailyImage.api || 'https://api.i-meto.com/akari/daily';
+const altText = dailyImage.alt_text || '每日 ACG 美图';
+const refreshEnabled = dailyImage.refresh !== false;
+const imageId = 'daily-image-photo';
 %>
 
 <div class="relative overflow-hidden rounded-2xl shadow-xl group animate-fade-in">
   <!-- Image Container -->
   <div class="aspect-[21/9] w-full bg-gradient-to-br from-primary-100 via-secondary-100 to-accent-100 dark:from-primary-900/30 dark:via-secondary-900/30 dark:to-accent-900/30">
     <img
+      id="<%= imageId %>"
       src="<%= dailyImageApi %>"
       alt="<%= altText %>"
       class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out"
+      loading="lazy"
+      decoding="async"
       onload="this.style.opacity='1'"
-      onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 840 360%22%3E%3Crect fill=%22%23d675ff%22 width=%22840%22 height=%22360%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22sans-serif%22 font-size=%2224%22 fill=%22white%22%3EACG Daily Image%3C/text%3E%3C/svg%3E'"
+      onerror="this.dataset.fallbackApplied='true';this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 840 360%22%3E%3Crect fill=%22%23d675ff%22 width=%22840%22 height=%22360%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22sans-serif%22 font-size=%2224%22 fill=%22white%22%3EACG Daily Image%3C/text%3E%3C/svg%3E'"
     />
   </div>
 
@@ -27,15 +34,18 @@ const altText = theme.home?.daily_image?.alt_text || '每日 ACG 美图';
   </div>
 
   <!-- Refresh Button (Optional API support) -->
-  <button
-    onclick="this.previousElementSibling.previousElementSibling.src='<%= dailyImageApi %>?t=' + Date.now()"
-    class="absolute top-4 right-4 p-2 rounded-full bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm shadow-lg opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300 hover:bg-primary-500 hover:text-white"
-    aria-label="Refresh image"
-  >
-    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-    </svg>
-  </button>
+  <% if (refreshEnabled) { %>
+    <button
+      type="button"
+      onclick="document.getElementById('<%= imageId %>').src='<%= dailyImageApi %>?t=' + Date.now()"
+      class="absolute top-4 right-4 p-2 rounded-full bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm shadow-lg opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300 hover:bg-primary-500 hover:text-white"
+      aria-label="Refresh image"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+      </svg>
+    </button>
+  <% } %>
 </div>
 
 <style>
