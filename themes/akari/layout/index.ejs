@@ -65,7 +65,7 @@ const siteKeywords = Array.isArray(akari.site?.keywords) ? akari.site.keywords.j
   <!-- Custom CSS -->
   <link rel="stylesheet" href="<%- url_for('/css/style.css') %>">
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300">
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300" style="--background-image-api: <%= akari.home?.background_image?.api || '' %>;">
 
 <div class="min-h-screen">
   <!-- Header / Navigation -->
