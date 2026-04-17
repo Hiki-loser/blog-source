@@ -14,11 +14,14 @@ technology:
     #   name: Database
     #   description: 数据库技术
 
-life:
-  name: 生活
+essay:
+  name: 随笔
   icon: heart
-  description: 生活感悟与分享
-
+  description: 生活随笔与感悟
+  subcategories:
+    reflections:
+      name: 感悟
+      description: 对生活和世界的思考与感悟
 ACG:
   name: ACG
   icon: star

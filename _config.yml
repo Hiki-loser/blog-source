@@ -112,16 +112,16 @@ akari:
   site:
     title: 个人博客
     subtitle: 记录生活与技术
-    description: 分享前端开发、ACG 文化和生活感悟
+    description: 分享后端开发、ACG 文化和生活感悟
     keywords:
-      - 前端开发
+      - 后端开发
       - ACG
       - 技术博客
       - 生活感悟
     author: 博主名称
-    author_description: 前端开发者 | ACG 爱好者
+    author_description: 后端开发者 | ACG 爱好者
     avatar: /img/avatar.svg
-    since: 2024
+    since: 2026
   nav:
     - name: 首页
       path: /
@@ -163,5 +163,5 @@ akari:
       category: ''
       category_id: ''
   footer:
-    since: 2024
+    since: 2026
     additional: 保持热爱，奔赴山海
