@@ -323,14 +323,226 @@ body::before {
    Code Blocks
    ======================================== */
 
-pre {
-  border-radius: 12px;
-  overflow: hidden;
+.prose code {
+  font-family: 'JetBrains Mono', 'Fira Code', 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+  font-size: 0.875em;
 }
 
-code {
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  font-size: 0.875em;
+.prose p code,
+.prose li code,
+.prose td code,
+.prose th code {
+  padding: 0.18em 0.45em;
+  border-radius: 0.45rem;
+  background: rgba(214, 117, 255, 0.12);
+  color: #a855f7;
+  border: 1px solid rgba(214, 117, 255, 0.18);
+}
+
+.dark .prose p code,
+.dark .prose li code,
+.dark .prose td code,
+.dark .prose th code {
+  background: rgba(168, 40, 249, 0.18);
+  color: #e9d5ff;
+  border-color: rgba(168, 40, 249, 0.2);
+}
+
+.prose figure.highlight,
+.prose pre {
+  margin: 1.5em 0;
+}
+
+.prose figure.highlight {
+  --code-bg: #f8fafc;
+  --code-surface: #eef2f7;
+  --code-border: #d8dee9;
+  --code-text: #1f2937;
+  --code-muted: #64748b;
+  --code-line: #cbd5e1;
+  --code-keyword: #7c3aed;
+  --code-built-in: #0f766e;
+  --code-string: #b45309;
+  --code-number: #0ea5e9;
+  --code-comment: #64748b;
+  --code-function: #2563eb;
+  --code-class: #b42318;
+  --code-operator: #475569;
+  --code-punctuation: #64748b;
+  --code-attr: #d946ef;
+  --code-addition: #15803d;
+  --code-deletion: #dc2626;
+  background: var(--code-bg);
+  border: 1px solid var(--code-border);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+}
+
+.dark .prose figure.highlight {
+  --code-bg: #0f172a;
+  --code-surface: #111827;
+  --code-border: #334155;
+  --code-text: #e5e7eb;
+  --code-muted: #94a3b8;
+  --code-line: #475569;
+  --code-keyword: #c084fc;
+  --code-built-in: #38bdf8;
+  --code-string: #fbbf24;
+  --code-number: #34d399;
+  --code-comment: #94a3b8;
+  --code-function: #60a5fa;
+  --code-class: #fca5a5;
+  --code-operator: #cbd5e1;
+  --code-punctuation: #94a3b8;
+  --code-attr: #f472b6;
+  --code-addition: #4ade80;
+  --code-deletion: #f87171;
+  box-shadow: 0 16px 36px rgba(2, 6, 23, 0.45);
+}
+
+.prose figure.highlight table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+}
+
+.prose figure.highlight td {
+  border: 0;
+  padding: 0;
+  vertical-align: top;
+}
+
+.prose figure.highlight td.gutter {
+  width: 1%;
+  user-select: none;
+  background: var(--code-surface);
+  border-right: 1px solid var(--code-border);
+  color: var(--code-muted);
+  text-align: right;
+}
+
+.prose figure.highlight td.gutter pre {
+  margin: 0;
+  padding: 1.1rem 0.9rem;
+  min-width: 3.5rem;
+  font-family: 'JetBrains Mono', 'Fira Code', 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+  font-size: 0.875rem;
+  line-height: 1.8;
+}
+
+.prose figure.highlight td.gutter .line {
+  display: block;
+  color: var(--code-line);
+}
+
+.prose figure.highlight td.code {
+  width: 100%;
+}
+
+.prose figure.highlight td.code pre {
+  margin: 0;
+  padding: 1.1rem 1.25rem;
+  overflow-x: auto;
+  background: transparent;
+  color: var(--code-text);
+  font-family: 'JetBrains Mono', 'Fira Code', 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+  font-size: 0.875rem;
+  line-height: 1.8;
+  tab-size: 2;
+}
+
+.prose figure.highlight .line {
+  display: block;
+  white-space: pre;
+}
+
+.prose figure.highlight .keyword,
+.prose figure.highlight .literal,
+.prose figure.highlight .type,
+.prose figure.highlight .variable.language {
+  color: var(--code-keyword);
+}
+
+.prose figure.highlight .built_in,
+.prose figure.highlight .selector-tag {
+  color: var(--code-built-in);
+}
+
+.prose figure.highlight .title.function_,
+.prose figure.highlight .title.function,
+.prose figure.highlight .function_,
+.prose figure.highlight .function {
+  color: var(--code-function);
+}
+
+.prose figure.highlight .title.class_,
+.prose figure.highlight .title.class {
+  color: var(--code-class);
+}
+
+.prose figure.highlight .params {
+  color: var(--code-text);
+}
+
+.prose figure.highlight .string,
+.prose figure.highlight .symbol,
+.prose figure.highlight .attr,
+.prose figure.highlight .attribute,
+.prose figure.highlight .selector-id,
+.prose figure.highlight .selector-class,
+.prose figure.highlight .quote {
+  color: var(--code-string);
+}
+
+.prose figure.highlight .number,
+.prose figure.highlight .regexp,
+.prose figure.highlight .link {
+  color: var(--code-number);
+}
+
+.prose figure.highlight .comment,
+.prose figure.highlight .meta,
+.prose figure.highlight .doctype {
+  color: var(--code-comment);
+  font-style: italic;
+}
+
+.prose figure.highlight .operator,
+.prose figure.highlight .punctuation {
+  color: var(--code-operator);
+}
+
+.prose figure.highlight .property,
+.prose figure.highlight .tag,
+.prose figure.highlight .name,
+.prose figure.highlight .attr,
+.prose figure.highlight .variable {
+  color: var(--code-attr);
+}
+
+.prose figure.highlight .addition {
+  color: var(--code-addition);
+}
+
+.prose figure.highlight .deletion {
+  color: var(--code-deletion);
+}
+
+.prose figure.highlight .emphasis {
+  font-style: italic;
+}
+
+.prose figure.highlight .strong {
+  font-weight: 700;
+}
+
+.prose figure.highlight .line:hover {
+  background: rgba(214, 117, 255, 0.05);
+}
+
+.dark .prose figure.highlight .line:hover {
+  background: rgba(168, 40, 249, 0.08);
 }
 
 /* ========================================
