@@ -2,10 +2,24 @@
 const akari = akari_config();
 const siteTitle = akari.site?.title || config.title || 'Hexo';
 const tagText = akari.ui?.tag || {};
-const locale = akari.site?.language || config.language || 'zh-CN';
+function toPostArray(collection) {
+  if (!collection) return [];
+  if (Array.isArray(collection)) return collection.slice();
+  if (typeof collection.toArray === 'function') return collection.toArray();
+
+  const arr = [];
+  if (typeof collection.forEach === 'function') {
+    collection.forEach(function (item) {
+      arr.push(item);
+    });
+  }
+  return arr;
+}
 const isTagIndex = page?.is_tag_index || !page?.posts;
 const tagPosts = !isTagIndex && page?.posts
-  ? (typeof page.posts.sort === 'function' ? page.posts.sort('-date') : page.posts)
+  ? toPostArray(page.posts).sort(function (a, b) {
+      return new Date(b.date) - new Date(a.date);
+    })
   : [];
 const currentTagName = String(page?.title || page?.tag || tagText.title || '标签');
 %>

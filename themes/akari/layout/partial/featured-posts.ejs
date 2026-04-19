@@ -1,6 +1,30 @@
 <%
 const akari = akari_config();
 const homeText = akari.ui?.home || {};
+function toPostArray(collection) {
+  if (!collection) return [];
+  if (Array.isArray(collection)) return collection.slice();
+  if (typeof collection.toArray === 'function') return collection.toArray();
+
+  const arr = [];
+  if (typeof collection.forEach === 'function') {
+    collection.forEach(function (item) {
+      arr.push(item);
+    });
+  }
+  return arr;
+}
+
+const allPosts = typeof page.posts !== 'undefined' && page.posts
+  ? toPostArray(page.posts)
+  : (typeof posts !== 'undefined' && posts ? toPostArray(posts) : toPostArray(site.posts));
+const introPosts = allPosts.filter(function (post) {
+  return akari_is_intro_post(post);
+});
+const showIntroOnly = (akari.home && akari.home.intro_only) !== false;
+const displayPosts = showIntroOnly ? introPosts : allPosts;
+const postsToRender = displayPosts.length > 0 ? displayPosts : allPosts;
+const statsLabels = homeText.stats || {};
 %>
 
 <section class="space-y-4">
@@ -18,21 +42,35 @@ const homeText = akari.ui?.home || {};
     </a>
   </div>
 
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <div class="rounded-xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 p-3">
+      <p class="text-xs text-gray-500 dark:text-gray-400"><%= statsLabels.posts || '总文章' %></p>
+      <p class="text-xl font-bold text-primary-600 dark:text-primary-400"><%= site.posts.length %></p>
+    </div>
+    <div class="rounded-xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 p-3">
+      <p class="text-xs text-gray-500 dark:text-gray-400"><%= statsLabels.intro_posts || '分类封面' %></p>
+      <p class="text-xl font-bold text-primary-600 dark:text-primary-400"><%= introPosts.length %></p>
+    </div>
+    <div class="rounded-xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 p-3">
+      <p class="text-xs text-gray-500 dark:text-gray-400"><%= statsLabels.categories || '分类数' %></p>
+      <p class="text-xl font-bold text-primary-600 dark:text-primary-400"><%= site.categories.length %></p>
+    </div>
+    <div class="rounded-xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 p-3">
+      <p class="text-xs text-gray-500 dark:text-gray-400"><%= statsLabels.tags || '标签数' %></p>
+      <p class="text-xl font-bold text-primary-600 dark:text-primary-400"><%= site.tags.length %></p>
+    </div>
+  </div>
+
   <!-- Posts List -->
   <div class="space-y-4">
-    <% if (typeof page.posts !== 'undefined' && page.posts && page.posts.length > 0) { %>
-      <% page.posts.forEach(function(post) { %>
-        <%- partial('partial/post-card', { post: post }) %>
-      <% }); %>
-    <% } else if (typeof posts !== 'undefined' && posts && posts.length > 0) { %>
-      <% posts.forEach(function(post) { %>
+    <% if (postsToRender.length > 0) { %>
+      <% postsToRender.forEach(function(post) { %>
         <%- partial('partial/post-card', { post: post }) %>
       <% }); %>
     <% } else { %>
-      <!-- Fallback: Show site posts -->
-      <% site.posts.forEach(function(post) { %>
-        <%- partial('partial/post-card', { post: post }) %>
-      <% }); %>
+      <div class="rounded-2xl border border-dashed border-gray-300 dark:border-gray-600 p-8 text-center text-gray-600 dark:text-gray-300 bg-white/70 dark:bg-gray-800/70">
+        <%= homeText.empty_posts || '暂无文章，开始创作吧。' %>
+      </div>
     <% } %>
   </div>
 

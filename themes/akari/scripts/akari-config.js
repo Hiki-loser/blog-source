@@ -26,6 +26,7 @@ hexo.extend.helper.register('akari_config', function () {
     social: {},
     home: {
       featured_count: 3,
+      intro_only: true,
       daily_image: {
         enable: true,
         api: 'https://uapis.cn/api/v1/random/image?category=acg&type=pc',
@@ -103,7 +104,14 @@ hexo.extend.helper.register('akari_config', function () {
       },
       home: {
         latest_posts_title: '最新文章',
-        view_more: '查看更多'
+        view_more: '查看更多',
+        empty_posts: '暂无文章，开始创作吧。',
+        stats: {
+          posts: '总文章',
+          intro_posts: '分类封面',
+          categories: '分类数',
+          tags: '标签数'
+        }
       },
       sidebar: {
         social_title: '关注我',
