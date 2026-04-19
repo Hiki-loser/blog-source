@@ -1,5 +1,5 @@
 ---
-title: SQL 基础语法
+title: SQL 基础语法 (一)
 date: 2026-04-18 21:23:00
 categories: technology/database
 tags:
