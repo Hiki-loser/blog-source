@@ -143,7 +143,7 @@ akari:
     intro_only: true
     daily_image:
       enable: true
-      api: https://uapis.cn/api/v1/random/image?category=acg&type=pc
+      api: https://uapis.cn/api/v1/random/image?category=general_anime&type=pc
       alt_text: 每日 ACG 美图
       refresh: true
     background_image:
