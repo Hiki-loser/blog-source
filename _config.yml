@@ -127,8 +127,8 @@ akari:
       path: /
     - name: 归档
       path: /archives/
-    - name: 分类
-      path: /categories/
+    - name: 趣味测试
+      path: /quiz/
     - name: 标签
       path: /tags/
     - name: 关于

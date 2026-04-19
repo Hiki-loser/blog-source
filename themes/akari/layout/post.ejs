@@ -6,6 +6,40 @@ const siteKeywords = page.tags ? page.tags.map(function(t) { return t.name; }).j
 const commentsEnabled = akari.comment?.enable && page.comments !== false;
 const postText = akari.ui?.post || {};
 const locale = akari.site?.language || config.language || 'zh-CN';
+function toArray(collection) {
+  if (!collection) return [];
+  if (Array.isArray(collection)) return collection.slice();
+  if (typeof collection.toArray === 'function') return collection.toArray();
+
+  const arr = [];
+  if (typeof collection.forEach === 'function') {
+    collection.forEach(function (item) {
+      arr.push(item);
+    });
+  }
+  return arr;
+}
+
+const pageCategories = toArray(page.categories);
+const currentLeafCategory = pageCategories.length > 0 ? pageCategories[pageCategories.length - 1] : null;
+const currentLeafCategoryNameRaw = String((currentLeafCategory && currentLeafCategory.name) || '');
+const currentLeafCategoryName = currentLeafCategoryNameRaw.includes('/')
+  ? currentLeafCategoryNameRaw.split('/').filter(Boolean).pop()
+  : currentLeafCategoryNameRaw;
+const isIntroPost = akari_is_intro_post(page);
+const categoryPosts = currentLeafCategory
+  ? toArray(site.posts).filter(function (post) {
+      const postCategories = toArray(post.categories);
+      if (!postCategories.length) return false;
+      const leaf = postCategories[postCategories.length - 1];
+      return String(leaf.path || '') === String(currentLeafCategory.path || '');
+    }).sort(function (a, b) {
+      return new Date(b.date) - new Date(a.date);
+    })
+  : [];
+const categoryPostsWithoutCurrent = categoryPosts.filter(function (post) {
+  return String(post.path || '') !== String(page.path || '');
+});
 %>
 
 <!DOCTYPE html>
@@ -108,6 +142,35 @@ const locale = akari.site?.language || config.language || 'zh-CN';
         <div class="prose prose-lg dark:prose-invert max-w-none">
           <%- page.content %>
         </div>
+
+        <% if (isIntroPost && currentLeafCategory && categoryPostsWithoutCurrent.length > 0) { %>
+          <section class="mt-10 rounded-2xl border border-primary-100 dark:border-primary-800 bg-gradient-to-br from-primary-50/70 to-secondary-50/70 dark:from-primary-900/20 dark:to-secondary-900/20 p-5 sm:p-6">
+            <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-5">
+              <div>
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white">继续阅读：<%= currentLeafCategoryName || currentLeafCategory.name %> 分类</h2>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">从导读直达该分类下的全部文章</p>
+              </div>
+              <a href="<%- url_for(currentLeafCategory.path) %>" class="inline-flex items-center gap-1 text-sm font-medium text-primary-600 dark:text-primary-400 hover:translate-x-1 transition-transform">
+                查看完整分类页
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+              </a>
+            </div>
+
+            <div class="space-y-3">
+              <% categoryPostsWithoutCurrent.forEach(function(post) { %>
+                <a href="<%- url_for(post.path) %>" class="group block rounded-xl border border-gray-100 dark:border-gray-700 bg-white/90 dark:bg-gray-800/70 p-4 hover:border-primary-300 dark:hover:border-primary-700 hover:shadow-lg hover:shadow-primary-500/10 transition-all duration-200">
+                  <div class="flex items-start justify-between gap-3">
+                    <div>
+                      <h3 class="font-semibold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors line-clamp-1"><%= post.title %></h3>
+                      <p class="text-xs text-gray-500 dark:text-gray-400 mt-1"><%= new Date(post.date).toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' }) %></p>
+                    </div>
+                    <svg class="w-4 h-4 text-gray-400 group-hover:text-primary-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                  </div>
+                </a>
+              <% }); %>
+            </div>
+          </section>
+        <% } %>
 
         <% if (page.prev || page.next) { %>
           <div class="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4">

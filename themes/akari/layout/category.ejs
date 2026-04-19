@@ -3,6 +3,7 @@ const akari = akari_config();
 const siteTitle = akari.site?.title || config.title || 'Hexo';
 const categoryText = akari.ui?.category || {};
 const locale = akari.site?.language || config.language || 'zh-CN';
+const categoryDataConfig = akari.categories || {};
 function toPostArray(collection) {
   if (!collection) return [];
   if (Array.isArray(collection)) return collection.slice();
@@ -17,7 +18,43 @@ function toPostArray(collection) {
   return arr;
 }
 const isCategoryIndex = page?.is_category_index || !page?.posts;
-const categoryCards = isCategoryIndex ? akari_category_cards() : [];
+const categoryCardsFromHelper = isCategoryIndex ? akari_category_cards() : [];
+const categoryCardsFallback = isCategoryIndex
+  ? toPostArray(site.categories)
+      .map(function (category) {
+        const categoryPosts = toPostArray(category.posts);
+        const introPosts = categoryPosts.filter(function (post) {
+          return akari_is_intro_post(post);
+        }).sort(function (a, b) {
+          return new Date(b.date) - new Date(a.date);
+        });
+
+        const parent = category.parent || null;
+        const topKey = String((parent && parent.name) || category.name || '');
+        const leafKey = String(category.name || '');
+        const topMeta = categoryDataConfig[topKey] || {};
+        const subMeta = (topMeta.subcategories && topMeta.subcategories[leafKey]) || {};
+
+        return {
+          path: category.path,
+          key: category.name,
+          name: subMeta.name || category.name,
+          groupName: topMeta.name || topKey,
+          description: subMeta.description || topMeta.description || '',
+          introPost: introPosts[0] || null,
+          postCount: Number(category.length || categoryPosts.length || 0)
+        };
+      })
+      .filter(function (card) {
+        return Boolean(card.introPost);
+      })
+      .sort(function (a, b) {
+        return new Date(b.introPost.date) - new Date(a.introPost.date);
+      })
+  : [];
+const categoryCards = categoryCardsFromHelper && categoryCardsFromHelper.length > 0
+  ? categoryCardsFromHelper
+  : categoryCardsFallback;
 const categoryPosts = !isCategoryIndex && page?.posts
   ? toPostArray(page.posts).sort(function (a, b) {
       return new Date(b.date) - new Date(a.date);

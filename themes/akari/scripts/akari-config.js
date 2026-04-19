@@ -210,8 +210,10 @@ hexo.extend.helper.register('akari_is_intro_post', function (post) {
   const sourceName = source.split('/').pop() || '';
   const fileName = sourceName.replace(/\.[^/.]+$/, '');
   const slug = String(post.slug || '');
+  const path = String(post.path || '');
+  const pathSegment = path.split('/').filter(Boolean).pop() || '';
 
-  return fileName.endsWith(suffix) || slug.endsWith(suffix);
+  return fileName.endsWith(suffix) || slug.endsWith(suffix) || pathSegment.endsWith(suffix);
 });
 
 hexo.extend.helper.register('akari_category_cards', function () {
@@ -221,9 +223,8 @@ hexo.extend.helper.register('akari_category_cards', function () {
   const suffix = (akari.category && akari.category.intro_suffix) || '-intro';
   const introOnly = (akari.category && akari.category.intro_only) !== false;
 
-  const postsModel = (hexo.site && hexo.site.posts) || [];
-  const posts = typeof postsModel.toArray === 'function' ? postsModel.toArray() : postsModel;
-  const cardMap = new Map();
+  const categoriesModel = (hexo.site && hexo.site.categories) || [];
+  const categories = typeof categoriesModel.toArray === 'function' ? categoriesModel.toArray() : categoriesModel;
 
   function isIntro(post) {
     if (!post) {
@@ -234,15 +235,13 @@ hexo.extend.helper.register('akari_category_cards', function () {
     const sourceName = source.split('/').pop() || '';
     const fileName = sourceName.replace(/\.[^/.]+$/, '');
     const slug = String(post.slug || '');
+    const path = String(post.path || '');
+    const pathSegment = path.split('/').filter(Boolean).pop() || '';
 
-    return fileName.endsWith(suffix) || slug.endsWith(suffix);
+    return fileName.endsWith(suffix) || slug.endsWith(suffix) || pathSegment.endsWith(suffix);
   }
 
-  function resolveCategoryMeta(chain) {
-    const top = chain[0] || {};
-    const leaf = chain[chain.length - 1] || {};
-    const topKey = String(top.name || '');
-    const leafKey = String(leaf.name || '');
+  function resolveCategoryMeta(topKey, leafKey) {
     const topMeta = categoriesData[topKey] || {};
     const subMeta = (topMeta.subcategories && topMeta.subcategories[leafKey]) || {};
 
@@ -254,50 +253,36 @@ hexo.extend.helper.register('akari_category_cards', function () {
     };
   }
 
-  posts.forEach((post) => {
-    if (!post || !post.categories || typeof post.categories.toArray !== 'function') {
-      return;
-    }
+  const cards = categories
+    .map((category) => {
+      const postsModel = category && category.posts ? category.posts : [];
+      const posts = typeof postsModel.toArray === 'function' ? postsModel.toArray() : postsModel;
+      const parent = category && category.parent ? category.parent : null;
+      const topKey = String((parent && parent.name) || category.name || '');
+      const leafKey = String(category.name || '');
+      const meta = resolveCategoryMeta(topKey, leafKey);
 
-    const chain = post.categories.toArray();
-    if (!chain.length) {
-      return;
-    }
+      let introPost = null;
+      posts.forEach((post) => {
+        if (isIntro(post)) {
+          if (!introPost || new Date(post.date) > new Date(introPost.date)) {
+            introPost = post;
+          }
+        }
+      });
 
-    const leaf = chain[chain.length - 1];
-    const key = String(leaf.path || leaf.name || '');
-
-    if (!key) {
-      return;
-    }
-
-    const meta = resolveCategoryMeta(chain);
-
-    if (!cardMap.has(key)) {
-      cardMap.set(key, {
-        path: leaf.path,
-        slug: leaf.slug,
-        key: leaf.name,
-        name: meta.leafName,
+      return {
+        path: category.path,
+        slug: category.slug,
+        key: category.name,
+        name: meta.leafName || category.name,
         groupName: meta.topName,
         description: meta.description,
         icon: meta.icon,
-        introPost: null,
-        postCount: 0
-      });
-    }
-
-    const card = cardMap.get(key);
-    card.postCount += 1;
-
-    if (isIntro(post)) {
-      if (!card.introPost || new Date(post.date) > new Date(card.introPost.date)) {
-        card.introPost = post;
-      }
-    }
-  });
-
-  const cards = Array.from(cardMap.values())
+        introPost,
+        postCount: Number(category.length || posts.length || 0)
+      };
+    })
     .filter((card) => (introOnly ? Boolean(card.introPost) : true))
     .sort((a, b) => {
       const aTime = a.introPost ? new Date(a.introPost.date).getTime() : 0;
