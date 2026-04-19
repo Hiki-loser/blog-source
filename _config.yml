@@ -3,15 +3,16 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: 个人博客
+title: Hiki的小站
 subtitle: 记录生活与技术
-description: 分享前端开发、ACG 文化和生活感悟
+description: 分享后端开发、ACG 文化和生活感悟
 keywords:
-  - 前端开发
+  - 后端开发
   - ACG
   - 技术博客
   - 生活感悟
-author: 博主名称
+author: Hiki
+author_description: 后端开发者 | ACG 爱好者
 language: zh-CN
 timezone: Asia/Shanghai
 
@@ -110,7 +111,7 @@ deploy:
 # Akari Theme Configuration
 akari:
   site:
-    title: 个人博客
+    title: Hiki的小站
     subtitle: 记录生活与技术
     description: 分享后端开发、ACG 文化和生活感悟
     keywords:
