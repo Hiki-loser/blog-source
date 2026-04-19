@@ -68,6 +68,7 @@ SELECT column1, column2, ...
 FROM table1 
 JOIN table2 ON table1.common_column = table2.common_column;
 ```
+- `on`：指定连接条件，通常是两个表中具有相同值的列。
 - `join`：返回两个表中匹配的记录。
 - `inner join`：返回两个表中匹配的记录。
 - `left join`：返回左表中的所有记录，以及右表中匹配的记录，如果右表中没有匹配的记录，则返回 NULL。

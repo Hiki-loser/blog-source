@@ -12,7 +12,10 @@ technology:
     database:
       name: Database
       description: 数据库技术
-
+    back-end:
+      name: back-end
+      description: 后端开发相关技术
+    
 essay:
   name: 随笔
   icon: heart
