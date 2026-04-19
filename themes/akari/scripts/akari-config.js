@@ -82,12 +82,24 @@ hexo.extend.helper.register('akari_config', function () {
         page_title: '分类',
         title: '分类',
         subtitle: '探索不同主题的文章',
-        post_count_suffix: '篇'
+        post_count_suffix: '篇',
+        cover_section_title: '分类导览',
+        cover_section_subtitle: '仅展示各分类的介绍文章，点击进入查看该分类全部内容',
+        enter_category: '进入分类',
+        back_to_categories: '返回分类页',
+        posts_title: '分类文章',
+        intro_badge: '封面文章',
+        empty_hint: '暂无可展示的分类封面文章，请为分类添加后缀为 -intro 的文章。',
+        empty_posts: '该分类下暂无文章。'
       },
       tag: {
         page_title: '标签',
         title: '标签',
-        subtitle: '发现更多关键词'
+        subtitle: '发现更多关键词',
+        post_count_suffix: '篇',
+        back_to_tags: '返回标签页',
+        posts_title: '标签文章',
+        empty_posts: '该标签下暂无文章。'
       },
       home: {
         latest_posts_title: '最新文章',
@@ -175,6 +187,117 @@ hexo.extend.helper.register('akari_config', function () {
   merged.categories = categoriesData;
 
   return merged;
+});
+
+hexo.extend.helper.register('akari_is_intro_post', function (post) {
+  const siteConfig = hexo.config || {};
+  const suffix =
+    ((siteConfig.akari || {}).category && (siteConfig.akari || {}).category.intro_suffix) || '-intro';
+
+  if (!post) {
+    return false;
+  }
+
+  const source = String(post.source || '');
+  const sourceName = source.split('/').pop() || '';
+  const fileName = sourceName.replace(/\.[^/.]+$/, '');
+  const slug = String(post.slug || '');
+
+  return fileName.endsWith(suffix) || slug.endsWith(suffix);
+});
+
+hexo.extend.helper.register('akari_category_cards', function () {
+  const siteConfig = hexo.config || {};
+  const akari = siteConfig.akari || {};
+  const categoriesData = (hexo.site && hexo.site.data && hexo.site.data.categories) || {};
+  const suffix = (akari.category && akari.category.intro_suffix) || '-intro';
+  const introOnly = (akari.category && akari.category.intro_only) !== false;
+
+  const postsModel = (hexo.site && hexo.site.posts) || [];
+  const posts = typeof postsModel.toArray === 'function' ? postsModel.toArray() : postsModel;
+  const cardMap = new Map();
+
+  function isIntro(post) {
+    if (!post) {
+      return false;
+    }
+
+    const source = String(post.source || '');
+    const sourceName = source.split('/').pop() || '';
+    const fileName = sourceName.replace(/\.[^/.]+$/, '');
+    const slug = String(post.slug || '');
+
+    return fileName.endsWith(suffix) || slug.endsWith(suffix);
+  }
+
+  function resolveCategoryMeta(chain) {
+    const top = chain[0] || {};
+    const leaf = chain[chain.length - 1] || {};
+    const topKey = String(top.name || '');
+    const leafKey = String(leaf.name || '');
+    const topMeta = categoriesData[topKey] || {};
+    const subMeta = (topMeta.subcategories && topMeta.subcategories[leafKey]) || {};
+
+    return {
+      topName: topMeta.name || topKey,
+      leafName: subMeta.name || leafKey,
+      description: subMeta.description || topMeta.description || '',
+      icon: subMeta.icon || topMeta.icon || 'folder'
+    };
+  }
+
+  posts.forEach((post) => {
+    if (!post || !post.categories || typeof post.categories.toArray !== 'function') {
+      return;
+    }
+
+    const chain = post.categories.toArray();
+    if (!chain.length) {
+      return;
+    }
+
+    const leaf = chain[chain.length - 1];
+    const key = String(leaf.path || leaf.name || '');
+
+    if (!key) {
+      return;
+    }
+
+    const meta = resolveCategoryMeta(chain);
+
+    if (!cardMap.has(key)) {
+      cardMap.set(key, {
+        path: leaf.path,
+        slug: leaf.slug,
+        key: leaf.name,
+        name: meta.leafName,
+        groupName: meta.topName,
+        description: meta.description,
+        icon: meta.icon,
+        introPost: null,
+        postCount: 0
+      });
+    }
+
+    const card = cardMap.get(key);
+    card.postCount += 1;
+
+    if (isIntro(post)) {
+      if (!card.introPost || new Date(post.date) > new Date(card.introPost.date)) {
+        card.introPost = post;
+      }
+    }
+  });
+
+  const cards = Array.from(cardMap.values())
+    .filter((card) => (introOnly ? Boolean(card.introPost) : true))
+    .sort((a, b) => {
+      const aTime = a.introPost ? new Date(a.introPost.date).getTime() : 0;
+      const bTime = b.introPost ? new Date(b.introPost.date).getTime() : 0;
+      return bTime - aTime;
+    });
+
+  return cards;
 });
 
 hexo.extend.helper.register('get_category_structure', function () {
