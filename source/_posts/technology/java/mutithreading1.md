@@ -19,13 +19,17 @@ cover:
 线程是程序执行的最小单位。每个线程都有自己的执行路径，可以独立执行任务。线程可以共享进程的资源，如内存和文件。
 #### 2. 进程（Process）
 进程是程序运行的一个实例，每个进程都有自己的内存空间和系统资源。一个进程可以包含多个线程，这些线程共享进程的资源。
-#### 3. 线程调度
-线程调度是操作系统管理线程执行的过程。调度器决定哪个线程在哪个时间段执行。线程调度可以是抢占式的，也可以是协作式的。
+#### 3.线程安全
+线程安全是指在多线程环境下，程序能够正确地处理共享资源，避免数据不一致和竞争条件。线程安全的程序可以在多个线程同时访问共享资源时保持正确的行为。
 #### 4.为什么需要多线程
 - 提高程序的效率：多线程可以同时执行多个任务，充分利用CPU资源。
 - 提高程序的响应能力：多线程可以让程序在执行长时间任务时保持响应。
 - 提高CPU利用率：多线程可以让CPU在等待I/O操作时执行其他任务。
 - 异步处理：多线程可以让程序在等待某些操作完成时继续执行其他任务。
+#### 5.并发编程三大原则
+- 原子性：一个操作要么全部执行成功，要么全部执行失败，不会被其他线程打断。
+- 可见性：一个线程对共享变量的修改对其他线程是可见的。
+- 有序性：程序执行的顺序按照代码的顺序执行，不会被编译器或处理器<span class="hover-tip" data-tip="处理器重排序：JVM 可能会对指令进行重排以优化性能，但在并发场景下可能导致可见性与时序问题。" tabindex="0">重排序</span>。
 
 ## 线程的创建与使用
 
@@ -40,6 +44,12 @@ class MyThread extends Thread {
         System.out.println("Thread is running");
     }
 }
+class Main {
+    public static void main(String[] args) {
+        MyThread thread = new MyThread();
+        thread.start();
+    }
+}
 ```
 - 实现 Runnable 接口：创建一个新的类实现 Runnable 接口，并实现 run() 方法。
 
@@ -50,11 +60,18 @@ class MyRunnable implements Runnable {
         System.out.println("Thread is running");
     }
 }
+class Main {
+    public static void main(String[] args) {
+        Thread thread = new Thread(new MyRunnable());
+        thread.start();
+    }
+}
 ```
 
 - 使用 Callable 接口：创建一个新的类实现 Callable 接口，并实现 call() 方法。
 
 ```java
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.Callable;
 class MyCallable implements Callable<String> {
     @Override
@@ -62,13 +79,25 @@ class MyCallable implements Callable<String> {
         return "Thread is running";
     }
 }
+class Main {
+    public static void main(String[] args) throws Exception {
+        FutureTask<String> futureTask = new FutureTask<>(new MyCallable());
+        Thread thread = new Thread(futureTask);
+        thread.start();
+        System.out.println(futureTask.get());
+    }
+}
 ```
 - 使用jdk21虚拟线程：使用 Thread.startVirtualThread() 方法创建一个新的虚拟线程。
 
 ```java
-Thread.startVirtualThread(() -> {
-    System.out.println("Virtual Thread is running");
-});
+class Main {
+    public static void main(String[] args) {
+        Thread.startVirtualThread(() -> {
+            System.out.println("Virtual Thread is running");
+        });
+    }
+}
 ```
 
 #### 2.线程的生命周期
@@ -80,6 +109,7 @@ Thread.startVirtualThread(() -> {
 - 阻塞（Blocked）：线程等待某个资源或条件满足。
 - 死亡（Terminated）：线程执行完毕或被强制终止。
 ```java
+import java.lang.Thread;
 public class ThreadStates {
    public static void main(String[] args) throws Exception {
        Thread thread = new Thread(() -> {
@@ -111,5 +141,46 @@ public class ThreadStates {
    }
 }
 ```
+#### 3.线程同步与通信
+线程同步是指多个线程访问共享资源时，确保资源的正确性和一致性。线程通信是指线程之间通过某种机制进行信息交换。
+##### 1. 什么是锁及锁对象
 
+锁是用于控制对共享资源访问的机制。锁对象是一个用于同步的对象，线程在访问共享资源时需要获取锁对象的锁。常见的锁对象有 synchronized 关键字、ReentrantLock 类等。当一个线程获取了锁对象的锁，其他线程就无法访问该资源，直到锁被释放。
+
+##### 2. synchronized 关键字：用于修饰方法或代码块，确保同一时间只有一个线程访问共享资源。
+
+```java
+class Counter {
+    private int count = 0;
+    public synchronized void increment() {
+        count++; // 同步方法
+    }
+    public static synchronized void staticIncrement() {
+        // 同步静态方法
+    }
+    public void methodWithSynchronizedBlock() {
+        synchronized (this) {//使用当前对象作为锁
+            // 同步代码块
+        }
+    }
+    public int getCount() {
+        return count;
+    }
+}
+```
+
+##### 3. volatile 关键字：用于修饰变量，确保变量的可见性和禁止指令重排序。
+
+```java
+class SharedData {
+    private volatile boolean flag = false;
+    public void setFlag(boolean value) {
+        flag = value; // 修改 flag 的值
+    }
+    public boolean getFlag() {
+        return flag; // 读取 flag 的值
+    }
+}
+```
+<style>
 
