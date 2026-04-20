@@ -36,8 +36,16 @@ cover:
 
 #### 1.创建线程的四种方式
 
-- 继承 Thread 类：创建一个新的类继承 Thread 类，并重写 run() 方法。
-
+##### 1. 继承 Thread 类：创建一个新的类继承 Thread 类，并重写 run() 方法。
+- start()：启动线程，调用 run() 方法执行线程任务。
+- run()：线程执行的任务代码。
+- sleep(long millis)：使当前线程休眠指定的时间。
+- join()：等待线程执行完毕。
+- getState()：获取线程的状态。
+- interrupt()：中断线程。
+- isAlive()：检查线程是否还在运行。
+- setName(String name)：设置线程的名称。
+- getName()：获取线程的名称。
 ```java
 class MyThread extends Thread {
     @Override
@@ -52,7 +60,7 @@ class Main {
     }
 }
 ```
-- 实现 Runnable 接口：创建一个新的类实现 Runnable 接口，并实现 run() 方法。
+##### 2. 实现 Runnable 接口：创建一个新的类实现 Runnable 接口，并实现 run() 方法。
 
 ```java
 class MyRunnable implements Runnable {
@@ -69,7 +77,7 @@ class Main {
 }
 ```
 
-- 使用 Callable 接口：创建一个新的类实现 Callable 接口，并实现 call() 方法。
+##### 3. 使用 Callable 接口：创建一个新的类实现 Callable 接口，并实现 call() 方法。
 
 ```java
 import java.util.concurrent.FutureTask;
@@ -89,7 +97,7 @@ class Main {
     }
 }
 ```
-- 使用jdk21虚拟线程：使用 Thread.startVirtualThread() 方法创建一个新的虚拟线程。
+##### 4. 使用jdk21虚拟线程：使用 Thread.startVirtualThread() 方法创建一个新的虚拟线程。
 
 ```java
 class Main {
@@ -238,6 +246,11 @@ class SharedResource {
 #### 4.并发工具类
 Java 提供了许多并发工具类来简化多线程编程，如 CountDownLatch、CyclicBarrier、Semaphore、Exchanger 等。这些工具类可以帮助我们更好地管理线程之间的协调和同步。
 ##### 1. CountDownLatch：一个同步辅助类，允许一个或多个线程等待直到在其他线程中执行的一组操作完成。
+- CountDownLatch(int count)：创建一个 CountDownLatch 实例，指定计数器的初始值。
+- void countDown()：使计数器减一，当计数器达到零时，所有等待的线程被唤醒。
+- void await()：使当前线程等待，直到计数器达到零。
+- long getCount()：返回当前计数器的值。
+- boolean await(long timeout, TimeUnit unit)：使当前线程等待，直到计数器达到零或超时发生。
 ```java
 import java.util.concurrent.CountDownLatch;
 class Worker implements Runnable {
@@ -270,6 +283,10 @@ class Main {
 }
 ```
 ##### 2. CyclicBarrier：一个同步辅助类，允许一组线程互相等待，直到所有线程都达到某个公共屏障点。
+- CyclicBarrier(int parties)：创建一个 CyclicBarrier 实例，指定参与线程的数量。
+- CyclicBarrier(int parties, Runnable barrierAction)：创建一个 CyclicBarrier 实例，指定参与线程的数量和一个可选的屏障动作，当所有线程到达屏障点时执行。
+- int await()：使当前线程等待，直到所有线程都到达屏障点。
+- int await(long timeout, TimeUnit unit)：使当前线程等待，直到所有线程都到达屏障点或超时发生。
 ```java
 import java.util.concurrent.CyclicBarrier;
 class Worker implements Runnable {
@@ -301,6 +318,11 @@ class Main {
 }
 ```
 ##### 3. Semaphore：一个计数信号量，控制同时访问某个资源的线程数量。
+- Semaphore(int permits)：创建一个 Semaphore 实例，指定许可的数量。
+- void acquire()：获取一个许可，如果没有可用的许可，则线程会被阻塞直到有许可可用。
+- void release()：释放一个许可，增加可用的许可数量。
+- int availablePermits()：返回当前可用的许可数量。 
+- boolean tryAcquire()：尝试获取一个许可，如果有可用的许可则获取成功并返回 true，否则返回 false。
 ```java
 import java.util.concurrent.Semaphore;
 class Worker implements Runnable {
@@ -332,6 +354,9 @@ class Main {
 }
 ```
 ##### 4. Exchanger：一个用于线程之间交换数据的同步点。
+- Exchanger<V>()：创建一个 Exchanger 实例，指定交换数据的类型。
+- V exchange(V x)：交换数据，如果没有其他线程调用 exchange() 方法，则当前线程会被阻塞直到有另一个线程调用 exchange() 方法进行交换。
+- V exchange(V x, long timeout, TimeUnit unit)：交换数据，如果没有其他线程调用 exchange() 方法，则当前线程会被阻塞直到有另一个线程调用 exchange() 方法进行交换或超时发生。
 ```java
 import java.util.concurrent.Exchanger;
 class Worker implements Runnable {
@@ -359,3 +384,48 @@ class Main {
     }
 }
 ```
+#### 5.线程池：线程池是一种管理和复用线程的机制，可以提高线程的效率和性能。Java 提供了 Executor 框架来创建和管理线程池。
+
+##### 1.线程池参数
+- corePoolSize：线程池中核心线程的数量，即使线程处于空闲状态也不会被销毁。
+- maximumPoolSize：线程池中最大线程的数量，当线程池中的线程数量达到 maximumPoolSize 时，新的线程将参考handler 参数指定的策略进行处理。
+- keepAliveTime：当线程池中的线程数量超过 corePoolSize 时，空闲线程的存活时间，超过这个时间后，空闲线程会被销毁。
+- unit：keepAliveTime 的时间单位，可以是 TimeUnit.SECONDS、TimeUnit.MINUTES 等。
+- workQueue：用于保存等待执行的任务的队列，可以是 ArrayBlockingQueue、LinkedBlockingQueue 等。
+- threadFactory：用于创建线程的工厂，可以自定义线程的属性，如线程名称、优先级等。
+- handler：当线程池中的线程数量达到 maximumPoolSize 时，处理被拒绝的任务的策略.
+```java
+import java.util.concurrent.*;
+class Main {
+    public static void main(String[] args) {
+        ExecutorService executor = new ThreadPoolExecutor(
+            2, // corePoolSize
+            4, // maximumPoolSize
+            60, // keepAliveTime
+            TimeUnit.SECONDS, // unit   
+            new LinkedBlockingQueue<>(10), // workQueue
+            Executors.defaultThreadFactory(), // threadFactory
+            new ThreadPoolExecutor.AbortPolicy() // handler
+        );
+        for (int i = 0; i < 10; i++) {
+            final int taskId = i;
+            executor.submit(() -> {
+                System.out.println("Task " + taskId + " is running");
+                try {   
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            });
+        }
+        executor.shutdown();
+    }
+}
+```
+##### 2.线程池的工作流程
+1. 当一个任务被提交到线程池时，线程池首先检查当前线程池中的线程数量是否小于 corePoolSize，如果是，则创建一个新的线程来执行任务。
+2. 如果当前线程池中的线程数量已经达到 corePoolSize，则将任务添加到 workQueue 中等待执行。
+3. 如果 workQueue 已满且当前线程池中的线程数量小于 maximumPoolSize，则创建一个新的非核心线程来执行任务。
+4. 如果当前线程池中的线程数量已经达到 maximumPoolSize 且 workQueue 已满，则根据 handler 参数指定的策略处理被拒绝的任务。
+5. 当线程池中的线程空闲时间超过 keepAliveTime 时，非核心线程会被销毁，核心线程则<span class="hover-tip" data-tip="核心线程即使空闲也不会被销毁，除非线程池被关闭。这是为了避免频繁创建和销毁线程带来的性能开销和增强系统响应性。
+" tabindex="0">不会被销毁</span>
