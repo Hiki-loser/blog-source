@@ -429,3 +429,91 @@ class Main {
 4. 如果当前线程池中的线程数量已经达到 maximumPoolSize 且 workQueue 已满，则根据 handler 参数指定的策略处理被拒绝的任务。
 5. 当线程池中的线程空闲时间超过 keepAliveTime 时，非核心线程会被销毁，核心线程则<span class="hover-tip" data-tip="核心线程即使空闲也不会被销毁，除非线程池被关闭。这是为了避免频繁创建和销毁线程带来的性能开销和增强系统响应性。
 " tabindex="0">不会被销毁</span>
+
+##### 3.线程池拒绝策略
+- AbortPolicy：默认的拒绝策略，直接抛出 RejectedExecutionException 异常。
+- CallerRunsPolicy：调用线程执行被拒绝的任务。
+- DiscardPolicy：直接丢弃被拒绝的任务，不抛出异常。
+- DiscardOldestPolicy：丢弃 workQueue 中最旧的一个任务，然后尝试执行被拒绝的任务。
+
+#### 6.线程安全的集合类
+Java 提供了一些线程安全的集合类，如 Vector、Hashtable、ConcurrentHashMap、CopyOnWriteArrayList 等。这些集合类通过内部的同步机制来保证线程安全，可以在多线程环境下安全地使用。
+
+- Vector：一个线程安全的动态数组，所有方法都使用 synchronized 关键字进行同步。
+- Hashtable：一个线程安全的哈希表，所有方法都使用 synchronized 关键字进行同步。
+- ConcurrentHashMap：一个线程安全的哈希表，使用分段锁机制来提高并发性能。
+- CopyOnWriteArrayList：一个线程安全的动态数组，使用复制机制来实现线程安全，适用于读多写少的场景。
+```java
+import java.util.concurrent.ConcurrentHashMap;
+class Main {
+    public static void main(String[] args) {
+        ConcurrentHashMap<String, String> map = new ConcurrentHashMap<>();
+        Thread writer = new Thread(() -> {
+            for (int i = 0; i < 5; i++) {
+                map.put("key" + i, "value" + i);
+                System.out.println("Writer added: key" + i);
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        Thread reader = new Thread(() -> {
+            for (int i = 0; i < 5; i++) {
+                String value = map.get("key" + i);
+                System.out.println("Reader read: key" + i + " = " + value);
+                try {
+                    Thread.sleep(700);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        writer.start();
+        reader.start();
+    }
+}
+```
+当不使用线程安全的集合类时，可能会出现数据不一致和竞争条件的问题。例如，在多线程环境下使用 ArrayList 进行读写操作时，可能会导致 ConcurrentModificationException 异常或数据丢失。因此，在多线程环境下，建议使用线程安全的集合类来保证数据的正确性和一致性.
+
+#### 7.虚拟线程
+虚拟线程是 Java 21 引入的一种轻量级线程实现，旨在提高并发性能和资源利用率。虚拟线程通过使用
+<span class="hover-tip" data-tip="协作式调度是一种线程调度机制，线程在执行过程中主动让出 CPU资源，允许其他线程执行。这种机制依赖于线程的合作，线程需要在适当的时候调用 yield() 方法来让出 CPU资源，或者在执行 I/O 操作时自动让出 CPU资源。协作式调度可以减少线程切换的开销，提高系统的性能和响应能力，但也可能导致线程饥饿和死锁等问题。
+" tabindex="0">协作式调度</span>
+和
+<span class="hover-tip" data-tip="
+非阻塞I/O指的是虚拟线程在执行I/O操作时不会阻塞线程，而是将线程挂起，等待I/O操作完成后再恢复线程的执行。这种机制允许虚拟线程在等待I/O操作时释放CPU资源，使其他线程能够继续执行，从而提高并发性能和响应能力。
+" tabindex="0">非阻塞I/O</span>
+来实现高效的并发执行。虚拟线程的创建和管理比传统线程更轻量级，可以在同一时间运行数百万个虚拟线程，而不会导致系统资源的过度消耗。虚拟线程适用于处理大量I/O密集型任务和高并发场景，可以显著提高程序的性能和响应能力。
+
+```java
+class Main {
+    public static void main(String[] args) {
+        Thread.startVirtualThread(() -> {
+            System.out.println("Virtual Thread is running");
+        });
+    }
+}
+```
+虚拟线程注意事项：
+- 虚拟线程不适用于 CPU 密集型任务，
+- 虚拟线程不支持线程局部变量（ThreadLocal），因为它们的调度机制是协作式的，可能会导致线程局部变量的值不一致。
+- 虚拟线程不支持线程优先级，因为它们的调度机制是协作式的，可能会导致线程优先级的设置无效。
+- 虚拟线程不支持线程中断，因为它们的调度机制是协作式的，可能会导致线程中断的处理不及时。
+- 虚拟线程不推荐线程池，因为虚拟线程的创建和管理比传统线程更轻量级，使用线程池可能会导致资源的过度消耗和性能下降.
+
+
+
+#### 8.多线程常见问题
+
+1. 死锁：当两个或多个线程相互等待对方释放资源时，就会发生死锁，导致线程无法继续执行。
+解决方法：避免嵌套锁、使用定时锁、使用死锁检测工具等。
+2. 资源竞争：当多个线程同时访问共享资源时，可能会导致数据不一致和竞争条件的问题。
+解决方法：使用线程同步机制，如 synchronized 关键字、Lock 接口等，来控制对共享资源的访问。
+3. 线程饥饿：当某些线程长时间无法获取到所需的资源时，就会发生线程饥饿，导致这些线程无法继续执行。
+解决方法：使用公平锁、调整线程优先级等，来确保所有线程都有机会获取到资源。
+4. 线程泄漏：当线程被创建但未正确关闭时，就会发生线程泄漏，导致系统资源被耗尽。
+解决方法：确保线程在完成任务后正确关闭，使用线程池来管理线程的生命周期等。
+5. 线程安全问题：当多个线程同时访问共享资源时，可能会导致数据不一致和竞争条件的问题。
+解决方法：使用线程安全的集合类、使用线程同步机制来控制对共享资源的访问等。
