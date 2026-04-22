@@ -6,6 +6,11 @@ const refreshSeparator = dailyImageApi.includes('?') ? '&' : '?';
 const altText = dailyImage.alt_text || '每日 ACG 美图';
 const refreshEnabled = dailyImage.refresh !== false;
 const imageId = 'daily-image-photo';
+const refreshButtonId = 'daily-image-refresh';
+const downloadButtonId = 'daily-image-download';
+const modalId = 'daily-image-modal';
+const modalImageId = 'daily-image-modal-photo';
+const closeButtonId = 'daily-image-close';
 const uiActions = akari.ui?.actions || {};
 const dailyImageUi = akari.ui?.daily_image || {};
 const fallbackText = dailyImageUi.fallback_text || 'ACG Daily Image';
@@ -24,7 +29,7 @@ const fallbackSvg = 'data:image/svg+xml,' + encodeURIComponent(
       id="<%= imageId %>"
       src="<%= dailyImageApi %>"
       alt="<%= altText %>"
-      class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out opacity-0"
+      class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out opacity-0 cursor-zoom-in"
       loading="lazy"
       decoding="async"
       onload="this.style.opacity='1'"
@@ -47,7 +52,7 @@ const fallbackSvg = 'data:image/svg+xml,' + encodeURIComponent(
   <% if (refreshEnabled) { %>
     <button
       type="button"
-      onclick="document.getElementById('<%= imageId %>').src='<%= dailyImageApi %><%= refreshSeparator %>t=' + Date.now()"
+      id="<%= refreshButtonId %>"
       class="absolute top-4 right-4 p-2 rounded-full bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm shadow-lg opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300 hover:bg-primary-500 hover:text-white"
       aria-label="<%= uiActions.refresh_image || '刷新图片' %>"
     >
@@ -61,8 +66,154 @@ const fallbackSvg = 'data:image/svg+xml,' + encodeURIComponent(
   <div class="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary-500/20 to-secondary-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 </div>
 
-<style>
-  .aspect-\[21\/9\] {
-    aspect-ratio: 21/9;
-  }
-</style>
+<!-- Fullscreen Viewer -->
+<div
+  id="<%= modalId %>"
+  class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/95 p-4"
+  role="dialog"
+  aria-modal="true"
+  aria-label="<%= altText %>"
+>
+  <button
+    type="button"
+    id="<%= closeButtonId %>"
+    class="absolute top-4 right-4 rounded-full bg-white/15 hover:bg-white/25 text-white p-2 transition-colors"
+    aria-label="<%= uiActions.close || '关闭' %>"
+  >
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+    </svg>
+  </button>
+
+  <a
+    id="<%= downloadButtonId %>"
+    href="<%= dailyImageApi %>"
+    download="acg-daily-image.jpg"
+    class="absolute top-4 right-16 rounded-full bg-white/15 hover:bg-white/25 text-white p-2 transition-colors"
+    aria-label="<%= uiActions.download_image || '下载图片' %>"
+  >
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v10m0 0l-4-4m4 4l4-4M4 20h16"></path>
+    </svg>
+  </a>
+
+  <img
+    id="<%= modalImageId %>"
+    alt="<%= altText %>"
+    class="max-h-[92vh] max-w-[95vw] object-contain"
+  />
+</div>
+
+<script>
+  (function () {
+    const imageApi = <%- JSON.stringify(dailyImageApi) %>
+    const refreshSeparator = <%- JSON.stringify(refreshSeparator) %>
+    const fallbackSvg = <%- JSON.stringify(fallbackSvg) %>
+    const imageEl = document.getElementById('<%= imageId %>')
+    const refreshEl = document.getElementById('<%= refreshButtonId %>')
+    const modalEl = document.getElementById('<%= modalId %>')
+    const modalImageEl = document.getElementById('<%= modalImageId %>')
+    const closeEl = document.getElementById('<%= closeButtonId %>')
+    const downloadEl = document.getElementById('<%= downloadButtonId %>')
+
+    if (!imageEl || !modalEl || !modalImageEl || !closeEl || !downloadEl) {
+      return
+    }
+
+    let currentObjectUrl = ''
+
+    const revokeObjectUrl = () => {
+      if (currentObjectUrl) {
+        URL.revokeObjectURL(currentObjectUrl)
+        currentObjectUrl = ''
+      }
+    }
+
+    const syncImageSource = () => {
+      const currentUrl = imageEl.currentSrc || imageEl.src
+      if (currentUrl) {
+        modalImageEl.src = currentUrl
+        downloadEl.href = currentUrl
+      }
+    }
+
+    const updateDownloadCache = async () => {
+      const targetUrl = imageEl.currentSrc || imageEl.src
+      if (!targetUrl || targetUrl.startsWith('data:image/svg+xml')) {
+        downloadEl.href = targetUrl
+        return
+      }
+
+      try {
+        const response = await fetch(targetUrl, { cache: 'force-cache' })
+        if (!response.ok) {
+          throw new Error('download cache fetch failed')
+        }
+
+        const blob = await response.blob()
+        revokeObjectUrl()
+        currentObjectUrl = URL.createObjectURL(blob)
+        downloadEl.href = currentObjectUrl
+      } catch (_) {
+        downloadEl.href = targetUrl
+      }
+    }
+
+    const closeModal = () => {
+      modalEl.classList.add('hidden')
+      modalEl.classList.remove('flex')
+      document.body.style.overflow = ''
+    }
+
+    const openModal = async () => {
+      syncImageSource()
+      modalEl.classList.remove('hidden')
+      modalEl.classList.add('flex')
+      document.body.style.overflow = 'hidden'
+      await updateDownloadCache()
+    }
+
+    imageEl.addEventListener('load', () => {
+      syncImageSource()
+      updateDownloadCache()
+    })
+
+    imageEl.addEventListener('error', () => {
+      revokeObjectUrl()
+      modalImageEl.src = fallbackSvg
+      downloadEl.href = fallbackSvg
+    })
+
+    imageEl.addEventListener('click', (event) => {
+      event.preventDefault()
+      openModal()
+    })
+
+    if (refreshEl) {
+      refreshEl.addEventListener('click', (event) => {
+        event.preventDefault()
+        const nextSrc = imageApi + refreshSeparator + 't=' + Date.now() + '&r=' + Math.random().toString(36).slice(2)
+        imageEl.style.opacity = '0'
+        imageEl.src = nextSrc
+      })
+    }
+
+    closeEl.addEventListener('click', closeModal)
+
+    modalEl.addEventListener('click', (event) => {
+      if (event.target === modalEl) {
+        closeModal()
+      }
+    })
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !modalEl.classList.contains('hidden')) {
+        closeModal()
+      }
+    })
+
+    window.addEventListener('beforeunload', revokeObjectUrl)
+
+    syncImageSource()
+  })()
+</script>
