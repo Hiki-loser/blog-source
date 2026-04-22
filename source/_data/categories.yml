@@ -15,7 +15,9 @@ technology:
     back-end:
       name: back-end
       description: 后端开发相关技术
-    
+    computer science:
+      name: Computer Science
+      description: 计算机科学相关知识
 essay:
   name: 随笔
   icon: heart
