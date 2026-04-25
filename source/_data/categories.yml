@@ -18,6 +18,9 @@ technology:
     computer science:
       name: Computer Science
       description: 计算机科学相关知识
+    projects:
+      name: Projects
+      description: 技术项目与实践
 essay:
   name: 随笔
   icon: heart

@@ -1,8 +1,7 @@
 ---
 title: 示例文章 - 请复制此文件创建新文章
 date: 2026-04-17 12:00:00
-categories:
-  - essay/reflections
+categories: essay/reflections
 tags:
   - 随笔
 description: 这是示例文章，请复制此文件并修改标题和内容来创建新文章。
