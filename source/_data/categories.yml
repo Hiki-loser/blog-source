@@ -21,6 +21,9 @@ technology:
     python:
       name: Python
       description: Python 技术栈
+    projects:
+      name: Projects
+      description: 技术项目与实践
 essay:
   name: 随笔
   icon: heart
