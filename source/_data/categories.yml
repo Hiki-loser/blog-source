@@ -21,9 +21,11 @@ technology:
     python:
       name: Python
       description: Python 技术栈
-    projects:
-      name: Projects
-      description: 技术项目与实践
+projects:
+    name: autoagent
+    description: 一个基于 AI Agent 的自动化项目
+    name: TavernDroid
+    description: SillyTavern 的 Android 原生客户端
 essay:
   name: 随笔
   icon: heart
