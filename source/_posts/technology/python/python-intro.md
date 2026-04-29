@@ -1,6 +1,6 @@
 ---
 title: Python 入门指南
-date: 2024-06-01
+date: 2026-04-27 19:20:00
 categories: technology/python
 tags:
   - python

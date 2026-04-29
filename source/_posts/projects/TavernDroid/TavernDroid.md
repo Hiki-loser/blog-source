@@ -4,9 +4,10 @@ date: 2026-4-29 23:49:00
 categories: projects/TavernDroid
 tags:
 - sillytavern
-- character-ai
 - agent
 - intro
+description: TavernDroid 是 SillyTavern 的 Android 原生客户端，完全兼容 ST 角色卡格式，提供流畅的原生体验。本文是 v1.0 的技术设计文档，详细介绍了架构、模块设计、数据库结构、格式兼容实现、LLM Provider 抽象层等核心技术细节。
+cover:
 ---
 # TavernDroid — SillyTavern Android 客户端
 ## v1.0 技术设计文档

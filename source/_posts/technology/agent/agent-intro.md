@@ -6,7 +6,6 @@ tags:
   - intro
   - AI
   - Agent
-  - LLM
 description: Agent 分类总览，聚焦智能体系统设计与实践。
 cover:
 ---

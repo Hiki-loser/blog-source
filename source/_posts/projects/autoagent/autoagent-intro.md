@@ -5,7 +5,6 @@ categories: projects/autoagent
 tags:
 - AI
 - Agent
-- LLM
 - intro
 description: 从零到一的企业级多模态智能工作流平台设计文档，涵盖架构、技术选型、模块设计与开发流程。
 cover:
