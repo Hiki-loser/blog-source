@@ -97,7 +97,7 @@ class Main {
     }
 }
 ```
-##### 4. 使用jdk21虚拟线程：使用 Thread.startVirtualThread() 方法创建一个新的虚拟线程。
+##### 4. 使用 JDK 21 虚拟线程：使用 Thread.startVirtualThread() 方法创建一个新的虚拟线程。
 
 ```java
 class Main {

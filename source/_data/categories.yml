@@ -21,6 +21,10 @@ technology:
     python:
       name: Python
       description: Python 技术栈
+    documentation:
+      name: Documentation
+      description: 技术文档与教程
+      
 projects:
     name: autoagent
     description: 一个基于 AI Agent 的自动化项目
