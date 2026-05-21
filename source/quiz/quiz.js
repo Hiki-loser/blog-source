@@ -330,18 +330,6 @@
     return Math.round((answeredCount() / QUESTIONS.length) * 100);
   }
 
-  // ── 标签显示 ──────────────────────────────────────────────
-
-  function optionTags(opt) {
-    const tags = [];
-    if (opt.outer) tags.push('外');
-    if (opt.inner) tags.push('内');
-    if (opt.feel) tags.push('感');
-    if (opt.think) tags.push('思');
-    if (tags.length === 0) return '';
-    return `<span class="quiz-tag">+${tags.join('·')}</span>`;
-  }
-
   // ── 视图渲染 ──────────────────────────────────────────────
 
   function renderQuestionView() {
@@ -374,7 +362,6 @@
             return `
               <button class="quiz-option ${active ? 'active' : ''}" data-opt="${i}">
                 <span class="quiz-option-text">${opt.text}</span>
-                ${optionTags(opt)}
               </button>
             `;
           }).join('')}

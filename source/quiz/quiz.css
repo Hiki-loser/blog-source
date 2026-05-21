@@ -143,22 +143,6 @@
   flex: 1;
 }
 
-.quiz-tag {
-  flex-shrink: 0;
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--quiz-primary);
-  background: color-mix(in srgb, var(--quiz-primary) 10%, transparent);
-  padding: 2px 7px;
-  border-radius: 8px;
-  letter-spacing: 0.02em;
-}
-
-.quiz-option.active .quiz-tag {
-  background: var(--quiz-primary);
-  color: #fff;
-}
-
 /* ── Footer / Buttons ───────────────────── */
 
 .quiz-footer {
