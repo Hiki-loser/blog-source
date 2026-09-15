@@ -3,6 +3,8 @@
  * akari_related_posts. Memoised for the lifetime of the build; `hexo clean`
  * starts a fresh process, so it can never go stale within a run.
  */
+const { merge, isIntroPost, splitCategoryName } = require('./lib/config');
+
 let relatedIndexCache = null;
 
 /**
@@ -36,14 +38,12 @@ function categoriesDataFrom(locals) {
  */
 function categoryMetaFrom(locals, name) {
   const data = categoriesDataFrom(locals);
-  const parts = String(name || '').split('/').filter(Boolean);
+  const { topKey, leafKey } = splitCategoryName(name);
 
-  if (!parts.length) {
+  if (!topKey) {
     return { topName: '', leafName: '', description: '', icon: 'folder' };
   }
 
-  const topKey = parts[0];
-  const leafKey = parts[parts.length - 1];
   const topMeta = data[topKey] || {};
   const subMeta = (topMeta.subcategories && topMeta.subcategories[leafKey]) || {};
 
@@ -62,264 +62,70 @@ hexo.extend.helper.register('akari_category_meta', function (name) {
 });
 
 hexo.extend.helper.register('akari_config', function () {
-  const categoriesData = categoriesDataFrom(this);
+  const locals = this;
   const siteConfig = hexo.config || {};
-  const rootAkariConfig = siteConfig.akari || {};
-  const currentYear = new Date().getFullYear();
 
-  const defaults = {
-    site: {
-      title: siteConfig.title || 'Hexo',
-      subtitle: siteConfig.subtitle || '',
-      description: siteConfig.description || '',
-      keywords: [],
-      author: siteConfig.author || 'John Doe',
-      author_description: '保持热爱，奔赴山海',
-      avatar: '/img/avatar.svg',
-      language: siteConfig.language || 'zh-CN',
-      since: currentYear
-    },
-    nav: [
-      { name: '首页', path: '/' },
-      { name: '归档', path: '/archives' },
-      { name: '分类', path: '/categories' },
-      { name: '标签', path: '/tags' },
-      { name: '关于', path: '/about' }
-    ],
-    social: {},
-    home: {
-      featured_count: 3,
-      intro_only: true,
-      daily_image: {
-        enable: true,
-        api: 'https://uapis.cn/api/v1/random/image?category=acg&type=pc',
-        alt_text: '每日 ACG 美图',
-        refresh: true,
-        // Give up and show the placeholder if the image has not loaded in time.
-        // The API redirects twice to reach the file, so this has to allow for
-        // more than a single request would.
-        timeout: 8000,
-        // Honour the browser's data-saver / slow-connection signal. The image
-        // is 7680x4320; the download and the decode are both real costs.
-        skip_on_save_data: true
-      },
-      background_image: {
-        enable: true,
-        api: 'https://uapis.cn/api/v1/random/image?category=landscape',
-        // Home page only, and there is deliberately no cache_ttl option: this
-        // API's image cannot be cached by any client-side means. See the header
-        // of source/js/api-image.js for the tested reasons before adding one.
-        // It is scoped to the home page precisely because of that.
-        skip_on_save_data: true
-      },
-      stats: {
-        enable: true
-      }
-    },
-    dark_mode: {
-      enable: true,
-      default: 'auto'
-    },
-    music: {
-      enable: false,
-      type: 'netease',
-      playlist_id: '',
-      auto: false,
-      custom_html: ''
-    },
-    comment: {
-      enable: false,
-      type: 'giscus',
-      giscus: {
-        repo: '',
-        repo_id: '',
-        category: '',
-        category_id: ''
-      },
-      valine: {
-        appId: '',
-        appKey: ''
-      },
-      utterances: {
-        repo: ''
-      }
-    },
-    // Site-wide search. The index itself is produced by hexo-generator-searchdb
-    // (configured under `search:` in the ROOT _config.yml — that plugin reads
-    // its own top-level key, not this theme namespace). This block only
-    // controls the front-end dialog and where it fetches from.
-    search: {
-      enable: true,
-      // Resolved through url_for() so a non-root `root` config keeps working.
-      path: '/search.json',
-      // Fetched on first dialog open, never on page load.
-      max_results: 20
-    },
-    // Visit counters. OFF by default: it is the only third-party runtime
-    // dependency left in the theme once Tailwind moved off its CDN, so it has
-    // to be a deliberate choice. The script is injected by scripts/inject.js and
-    // the markup degrades to nothing if it never loads.
-    stats: {
-      enable: false,
-      provider: 'vercount',
-      show_counts: true,
-      // Build-time numbers (post count, total words, last updated) computed
-      // from locals. These always work — no network, no third party — so they
-      // are worth showing even with counters disabled.
-      show_build_stats: true
-    },
-    footer: {
-      since: currentYear,
-      additional: ''
-    },
-    ui: {
-      archive: {
-        page_title: '归档',
-        title: '文章归档',
-        subtitle: '记录每一刻的思考与成长'
-      },
-      category: {
-        page_title: '分类',
-        title: '分类',
-        subtitle: '探索不同主题的文章',
-        post_count_suffix: '篇',
-        cover_section_title: '分类导览',
-        cover_section_subtitle: '仅展示各分类的介绍文章，点击进入查看该分类全部内容',
-        enter_category: '进入分类',
-        back_to_categories: '返回分类页',
-        posts_title: '分类文章',
-        intro_badge: '封面文章',
-        empty_hint: '暂无可展示的分类封面文章，请为分类添加后缀为 -intro 的文章。',
-        empty_posts: '该分类下暂无文章。'
-      },
-      tag: {
-        page_title: '标签',
-        title: '标签',
-        subtitle: '发现更多关键词',
-        post_count_suffix: '篇',
-        back_to_tags: '返回标签页',
-        posts_title: '标签文章',
-        empty_posts: '该标签下暂无文章。'
-      },
-      home: {
-        latest_posts_title: '最新文章',
-        view_more: '查看更多',
-        empty_posts: '暂无文章，开始创作吧。',
-        stats: {
-          posts: '总文章',
-          intro_posts: '分类封面',
-          categories: '分类数',
-          tags: '标签数'
-        }
-      },
-      sidebar: {
-        social_title: '关注我',
-        categories_title: '分类',
-        tags_title: '标签'
-      },
-      profile: {
-        posts: '文章',
-        categories: '分类',
-        tags: '标签'
-      },
-      pagination: {
-        prev: '上一页',
-        next: '下一页',
-        label: '分页导航'
-      },
-      post: {
-        back: '返回',
-        prev_post: '上一篇',
-        next_post: '下一篇',
-        permalink: '本文链接：',
-        copyright_prefix: '版权声明：本博客所有文章除特别声明外，均采用 ',
-        copyright_suffix: ' 许可协议。转载请注明出处！'
-      },
-      comments: {
-        title: '评论',
-        valine_placeholder: '留下你的评论吧～',
-        utterances_label: '💬 评论',
-        incomplete_hint: '评论功能已开启，但配置尚不完整，请补全 _config.yml 中 akari.comment 配置。'
-      },
-      footer: {
-        all_rights_reserved: 'All rights reserved.',
-        powered_by: 'Powered by',
-        theme_name: 'Akari Theme'
-      },
-      actions: {
-        refresh_image: '刷新图片',
-        toggle_dark_mode: '切换深色模式',
-        menu: '菜单',
-        search: '搜索',
-        toggle_music: '切换音乐播放器',
-        skip_to_content: '跳到主要内容',
-        back_to_top: '回到顶部',
-        search_placeholder: '搜索文章…',
-        search_empty: '没有找到匹配的文章',
-        search_hint: '输入关键词，Esc 关闭',
-        search_loading: '正在加载索引…'
-      },
-      daily_image: {
-        fallback_text: 'ACG Daily Image'
-      }
-    },
-    categories: {}
-  };
+  /*
+   * Defaults live in themes/akari/_config.yml, which Hexo loads into
+   * hexo.theme.config. A site overrides any of them under the `akari:` key of its
+   * OWN _config.yml, which lands in hexo.config.akari — a separate namespace Hexo
+   * does not fold in for us.
+   *
+   * Previously the defaults were a ~160 line object right here, AND the site
+   * _config.yml carried a verbatim copy of the whole `ui:` block: two copies of
+   * the same strings, one silently shadowing the other.
+   *
+   * merge() is deliberately the theme's own, not hexo-util's deepMerge: only this
+   * one replaces arrays wholesale, which is what lets a site remove a default nav
+   * entry instead of having it re-appended.
+   */
+  const themeConfig = hexo.theme.config || {};
+  const overrides = siteConfig.akari || {};
+  const merged = merge(themeConfig, overrides);
 
-  function isPlainObject(value) {
-    return value !== null && typeof value === 'object' && !Array.isArray(value);
-  }
+  /*
+   * Site metadata falls back to the root _config.yml, which is exactly why it is
+   * not a literal in the theme YAML — it depends on the site.
+   */
+  merged.site = merged.site || {};
+  const site = merged.site;
+  site.title = site.title || siteConfig.title || 'Hexo';
+  site.subtitle = site.subtitle || siteConfig.subtitle || '';
+  site.description = site.description || siteConfig.description || '';
+  site.author = site.author || siteConfig.author || 'John Doe';
+  site.language = site.language || siteConfig.language || 'zh-CN';
+  if (site.since == null) site.since = new Date().getFullYear();
 
-  function merge(base, source) {
-    const output = Array.isArray(base) ? base.slice() : { ...base };
-
-    Object.keys(source || {}).forEach((key) => {
-      const baseValue = output[key];
-      const sourceValue = source[key];
-
-      if (isPlainObject(baseValue) && isPlainObject(sourceValue)) {
-        output[key] = merge(baseValue, sourceValue);
-      } else if (Array.isArray(sourceValue)) {
-        output[key] = sourceValue.slice();
-      } else if (sourceValue !== undefined) {
-        output[key] = sourceValue;
-      }
-    });
-
-    return output;
-  }
-
-  const merged = merge(defaults, rootAkariConfig);
-
-  merged.site.keywords = Array.isArray(merged.site.keywords)
-    ? merged.site.keywords
-    : String(merged.site.keywords || '')
+  // Accept either a YAML list or a comma-separated string.
+  site.keywords = Array.isArray(site.keywords)
+    ? site.keywords
+    : String(site.keywords || '')
         .split(',')
         .map((keyword) => keyword.trim())
         .filter(Boolean);
 
-  merged.categories = categoriesData;
+  merged.footer = merged.footer || {};
+  if (merged.footer.since == null) merged.footer.since = site.since;
+
+  // Attached rather than read from the theme config: it comes from
+  // source/_data/categories.yml, not from either _config.yml.
+  merged.categories = categoriesDataFrom(locals);
 
   return merged;
 });
 
+/**
+ * Whether a post is a category cover article. The rule itself lives in
+ * lib/config.js so that this helper, akari_category_cards and the category page
+ * cannot disagree — the predicate used to be written out three times.
+ */
 hexo.extend.helper.register('akari_is_intro_post', function (post) {
-  const siteConfig = hexo.config || {};
-  const suffix =
-    ((siteConfig.akari || {}).category && (siteConfig.akari || {}).category.intro_suffix) || '-intro';
-
-  if (!post) {
-    return false;
-  }
-
-  const source = String(post.source || '');
-  const sourceName = source.split('/').pop() || '';
-  const fileName = sourceName.replace(/\.[^/.]+$/, '');
-  const slug = String(post.slug || '');
-  const path = String(post.path || '');
-  const pathSegment = path.split('/').filter(Boolean).pop() || '';
-
-  return fileName.endsWith(suffix) || slug.endsWith(suffix) || pathSegment.endsWith(suffix);
+  // Every helper is bound onto the locals, so the merged config is reachable
+  // from here. The previous version read only the site override
+  // (hexo.config.akari) and so ignored any theme-level default.
+  const akari = this.akari_config ? this.akari_config() : {};
+  const suffix = (akari.category && akari.category.intro_suffix) || '-intro';
+  return isIntroPost(post, suffix);
 });
 
 /**
@@ -486,30 +292,14 @@ hexo.extend.helper.register('akari_sort_terms', function (collection, mode) {
 });
 
 hexo.extend.helper.register('akari_category_cards', function () {
-  const siteConfig = hexo.config || {};
-  const akari = siteConfig.akari || {};
-  const suffix = (akari.category && akari.category.intro_suffix) || '-intro';
-  const introOnly = (akari.category && akari.category.intro_only) !== false;
   // Helpers are bound to the per-render locals, which is where `.site` lives.
   const locals = this;
+  const akari = this.akari_config ? this.akari_config() : {};
+  const suffix = (akari.category && akari.category.intro_suffix) || '-intro';
+  const introOnly = (akari.category && akari.category.intro_only) !== false;
 
   const categoriesModel = (locals.site && locals.site.categories) || [];
   const categories = typeof categoriesModel.toArray === 'function' ? categoriesModel.toArray() : categoriesModel;
-
-  function isIntro(post) {
-    if (!post) {
-      return false;
-    }
-
-    const source = String(post.source || '');
-    const sourceName = source.split('/').pop() || '';
-    const fileName = sourceName.replace(/\.[^/.]+$/, '');
-    const slug = String(post.slug || '');
-    const path = String(post.path || '');
-    const pathSegment = path.split('/').filter(Boolean).pop() || '';
-
-    return fileName.endsWith(suffix) || slug.endsWith(suffix) || pathSegment.endsWith(suffix);
-  }
 
   const cards = categories
     .map((category) => {
@@ -521,7 +311,7 @@ hexo.extend.helper.register('akari_category_cards', function () {
 
       let introPost = null;
       posts.forEach((post) => {
-        if (isIntro(post)) {
+        if (isIntroPost(post, suffix)) {
           if (!introPost || new Date(post.date) > new Date(introPost.date)) {
             introPost = post;
           }

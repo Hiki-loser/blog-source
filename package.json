@@ -8,7 +8,9 @@
     "build": "npm run build:css && hexo generate",
     "clean": "hexo clean",
     "deploy": "hexo deploy",
-    "server": "hexo server"
+    "server": "hexo server",
+    "test": "node --test \"themes/akari/scripts/lib/*.test.js\"",
+    "check": "npm test && node tools/verify-taxonomy.js && node tools/test-api-image.js"
   },
   "hexo": {
     "version": "8.1.1"

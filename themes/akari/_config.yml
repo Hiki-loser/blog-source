@@ -1,0 +1,162 @@
+# Akari theme defaults.
+#
+# This file is the single source of truth for every theme option. A site
+# overrides any of them under the `akari:` key of its OWN _config.yml — that is
+# what Hexo merges on top of this one (hexo/dist/hexo/index.js:
+# `deepMerge(ctx.theme.config, ctx.config.theme_config)`).
+#
+# Before this file existed the defaults were a ~160 line object inside
+# scripts/akari-config.js, and the site _config.yml carried a VERBATIM copy of
+# the whole `ui:` block. Two copies of the same strings, one of which silently
+# shadowed the other.
+#
+# ARRAYS ARE REPLACED, NOT MERGED. Supplying `nav` here overrides the whole
+# list, so a site that wants to add one item must restate all of them. This is
+# deliberate: a concatenating merge would make it impossible to REMOVE a default
+# nav entry.
+#
+# Site metadata (title, subtitle, description, author, language) is deliberately
+# absent: it falls back to the root _config.yml at runtime, so it cannot be a
+# literal here. See akari_config() in scripts/akari-config.js.
+site:
+  keywords: []
+  author_description: 保持热爱，奔赴山海
+  avatar: /img/avatar.svg
+nav:
+  - name: 首页
+    path: /
+  - name: 归档
+    path: /archives
+  - name: 分类
+    path: /categories
+  - name: 标签
+    path: /tags
+  - name: 关于
+    path: /about
+social: {}
+home:
+  featured_count: 3
+  intro_only: true
+  daily_image:
+    enable: true
+    api: https://uapis.cn/api/v1/random/image?category=acg&type=pc
+    alt_text: 每日 ACG 美图
+    refresh: true
+    timeout: 8000
+    skip_on_save_data: true
+  background_image:
+    enable: true
+    api: https://uapis.cn/api/v1/random/image?category=landscape
+    skip_on_save_data: true
+  stats:
+    enable: true
+dark_mode:
+  enable: true
+  default: auto
+music:
+  enable: false
+  type: netease
+  playlist_id: ''
+  auto: false
+  custom_html: ''
+comment:
+  enable: false
+  type: giscus
+  giscus:
+    repo: ''
+    repo_id: ''
+    category: ''
+    category_id: ''
+  valine:
+    appId: ''
+    appKey: ''
+  utterances:
+    repo: ''
+search:
+  enable: true
+  path: /search.json
+  max_results: 20
+stats:
+  enable: false
+  provider: vercount
+  show_counts: true
+  show_build_stats: true
+footer:
+  additional: ''
+ui:
+  archive:
+    page_title: 归档
+    title: 文章归档
+    subtitle: 记录每一刻的思考与成长
+  category:
+    page_title: 分类
+    title: 分类
+    subtitle: 探索不同主题的文章
+    post_count_suffix: 篇
+    cover_section_title: 分类导览
+    cover_section_subtitle: 仅展示各分类的介绍文章，点击进入查看该分类全部内容
+    enter_category: 进入分类
+    back_to_categories: 返回分类页
+    posts_title: 分类文章
+    intro_badge: 封面文章
+    empty_hint: 暂无可展示的分类封面文章，请为分类添加后缀为 -intro 的文章。
+    empty_posts: 该分类下暂无文章。
+  tag:
+    page_title: 标签
+    title: 标签
+    subtitle: 发现更多关键词
+    post_count_suffix: 篇
+    back_to_tags: 返回标签页
+    posts_title: 标签文章
+    empty_posts: 该标签下暂无文章。
+  home:
+    latest_posts_title: 最新文章
+    view_more: 查看更多
+    empty_posts: 暂无文章，开始创作吧。
+    stats:
+      posts: 总文章
+      intro_posts: 分类封面
+      categories: 分类数
+      tags: 标签数
+  sidebar:
+    social_title: 关注我
+    categories_title: 分类
+    tags_title: 标签
+  profile:
+    posts: 文章
+    categories: 分类
+    tags: 标签
+  pagination:
+    prev: 上一页
+    next: 下一页
+    label: 分页导航
+  post:
+    back: 返回
+    prev_post: 上一篇
+    next_post: 下一篇
+    permalink: 本文链接：
+    copyright_prefix: '版权声明：本博客所有文章除特别声明外，均采用 '
+    copyright_suffix: ' 许可协议。转载请注明出处！'
+  comments:
+    title: 评论
+    valine_placeholder: 留下你的评论吧～
+    utterances_label: 💬 评论
+    incomplete_hint: 评论功能已开启，但配置尚不完整，请补全 _config.yml 中 akari.comment 配置。
+  footer:
+    all_rights_reserved: All rights reserved.
+    powered_by: Powered by
+    theme_name: Akari Theme
+  actions:
+    refresh_image: 刷新图片
+    toggle_dark_mode: 切换深色模式
+    menu: 菜单
+    search: 搜索
+    toggle_music: 切换音乐播放器
+    skip_to_content: 跳到主要内容
+    back_to_top: 回到顶部
+    search_placeholder: 搜索文章…
+    search_empty: 没有找到匹配的文章
+    search_hint: 输入关键词，Esc 关闭
+    search_loading: 正在加载索引…
+  daily_image:
+    fallback_text: ACG Daily Image

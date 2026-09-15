@@ -74,8 +74,9 @@ const statsLabels = homeText.stats || {};
     <% } %>
   </div>
 
-  <!-- Pagination -->
-  <% if (typeof paginator !== 'undefined' && paginator) { %>
-    <%- partial('partial/pagination') %>
-  <% } %>
+  <!-- Pagination. The partial decides whether there is anything to show from
+       page.total; the old `typeof paginator !== 'undefined'` guard here was
+       always true (paginator is a helper function) and hid the fact that the
+       partial itself never rendered. -->
+  <%- partial('partial/pagination') %>
 </section>

@@ -1,31 +1,45 @@
+<%#
+  Pagination control.
+
+  This partial never rendered anything, on any page, since the theme was written.
+  It read `paginator.total`, `paginator.current`, `paginator.prev` and
+  `paginator.path` — but there is no `paginator` OBJECT in a Hexo layout.
+  `paginator` is a helper FUNCTION (used as `paginator({...})`), so
+  `paginator.total` was `undefined`, `undefined > 1` was false, and the whole
+  block was skipped. The guard `typeof paginator !== 'undefined'` was true, which
+  is why this was invisible rather than throwing.
+
+  The pagination data actually lives on `page`, put there by hexo-pagination
+  (node_modules/hexo-pagination/lib/pagination.js):
+      base, total, current, current_url, prev, prev_link, next, next_link
+
+  Note `page.prev` / `page.next` are page NUMBERS here, not posts — on a post page
+  those same names hold the neighbouring articles. `prev_link` / `next_link` carry
+  the URLs.
+
+  The page-number list is windowed (first, last, current ±2, with a gap marker)
+  rather than rendering every page, which grew linearly with the archive.
+%>
 <%
 const akari = akari_config();
 const paginationText = akari.ui?.pagination || {};
 
-/*
- * Windowed page list.
- *
- * This used to render EVERY page number — `for (i = 1; i <= paginator.total)` —
- * so the control grew linearly with the archive and would have become a wall of
- * a hundred buttons. Now it shows the first page, the last page, and a couple of
- * neighbours of the current one, with a gap marker between runs.
- *
- * It also fixes two accessibility gaps: the <nav> had no label (there are
- * several navs on a page) and the current page was a <span> with no
- * aria-current, so it was announced as ordinary text rather than as the page you
- * are on.
- */
+const totalPages = Number(page.total) || 1;
+const currentPage = Number(page.current) || 1;
+const basePath = page.base || '';
+const paginationDir = config.pagination_dir || 'page';
 const WINDOW = 2;
 
 function pageUrl(index) {
-  return index === 1 ? '/' : String(paginator.path).replace('%d', index);
+  if (index === 1) return basePath || '/';
+  return basePath + paginationDir + '/' + index + '/';
 }
 
 const items = [];
 let lastShown = 0;
 
-for (let i = 1; i <= paginator.total; i++) {
-  const keep = i === 1 || i === paginator.total || Math.abs(i - paginator.current) <= WINDOW;
+for (let i = 1; i <= totalPages; i++) {
+  const keep = i === 1 || i === totalPages || Math.abs(i - currentPage) <= WINDOW;
   if (!keep) continue;
   if (lastShown && i - lastShown > 1) items.push('gap');
   items.push(i);
@@ -33,11 +47,11 @@ for (let i = 1; i <= paginator.total; i++) {
 }
 %>
 
-<% if (paginator && paginator.total > 1) { %>
+<% if (totalPages > 1) { %>
 <nav class="flex flex-wrap items-center justify-center gap-2 mt-8 animate-fade-in" aria-label="<%= paginationText.label || '分页导航' %>">
-  <% if (paginator.prev) { %>
+  <% if (page.prev) { %>
     <a
-      href="<%- url_for(paginator.prev) %>"
+      href="<%- url_for(page.prev_link) %>"
       rel="prev"
       class="flex items-center gap-1 px-4 py-2 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:text-primary-600 dark:hover:text-primary-400 hover:border-primary-300 dark:hover:border-primary-700 transition-all duration-200 font-medium"
     >
@@ -51,7 +65,7 @@ for (let i = 1; i <= paginator.total; i++) {
   <% items.forEach(function (item) { %>
     <% if (item === 'gap') { %>
       <span class="px-2 py-2 text-gray-400" aria-hidden="true">…</span>
-    <% } else if (item === paginator.current) { %>
+    <% } else if (item === currentPage) { %>
       <span
         aria-current="page"
         class="px-4 py-2 rounded-xl bg-gradient-to-r from-primary-500 to-secondary-500 text-white font-bold shadow-lg shadow-primary-500/25"
@@ -65,9 +79,9 @@ for (let i = 1; i <= paginator.total; i++) {
     <% } %>
   <% }); %>
 
-  <% if (paginator.next) { %>
+  <% if (page.next) { %>
     <a
-      href="<%- url_for(paginator.next) %>"
+      href="<%- url_for(page.next_link) %>"
       rel="next"
       class="flex items-center gap-1 px-4 py-2 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:text-primary-600 dark:hover:text-primary-400 hover:border-primary-300 dark:hover:border-primary-700 transition-all duration-200 font-medium"
     >

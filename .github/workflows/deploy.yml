@@ -43,17 +43,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Tags/categories that differ only by case collide on the case-insensitive
-      # filesystems most contributors use, making `hexo generate` non-reproducible
-      # locally and splitting the term in two on the deployed Linux site.
-      # This has already happened twice (agent/Agent, java/Java).
-      - name: Check taxonomy for case collisions
-        run: node tools/verify-taxonomy.js
-
-      # Covers the timeout / data-saver / single-request behaviour of the
-      # third-party image loader, which is awkward to exercise in a browser.
-      - name: Run behaviour tests
-        run: node tools/test-api-image.js
+      # Unit tests for the theme's config helpers, taxonomy case-collision check
+      # (which has already caught two real regressions: agent/Agent, java/Java),
+      # and behaviour tests for the image loader. See package.json -> "check".
+      - name: Run checks
+        run: npm run check
 
       # The compiled stylesheet is committed so that deploying never depends on
       # a build step succeeding. That makes it possible to commit a source change
