@@ -110,6 +110,13 @@ const dailyImageEnabled = akari.home?.daily_image?.enable !== false && !!akari.h
 
   <title><%= htmlTitle %></title>
 
+  <%# Canonical, Open Graph, Twitter card, article timestamps, robots. %>
+  <%- partial('partial/seo', {
+        description: pageDescription,
+        canonical: full_url_for(page.path || ''),
+        kind: kind
+      }) %>
+
   <link rel="icon" type="image/svg+xml" href="<%- url_for('/img/favicon.svg') %>">
 
   <%#
@@ -167,6 +174,10 @@ const dailyImageEnabled = akari.home?.daily_image?.enable !== false && !!akari.h
   <% if (akari.music?.enable) { %>
     <%- partial('partial/music-player') %>
   <% } %>
+
+  <% if (akari.search?.enable !== false) { %>
+    <%- partial('partial/search-dialog') %>
+  <% } %>
 </div>
 
 <script src="<%- url_for('/js/dark-mode.js') %>"></script>
@@ -184,6 +195,9 @@ const dailyImageEnabled = akari.home?.daily_image?.enable !== false && !!akari.h
 <% } %>
 <% if (backdropEnabled) { %>
 <script src="<%- url_for('/js/backdrop.js') %>"></script>
+<% } %>
+<% if (akari.search?.enable !== false) { %>
+<script src="<%- url_for('/js/search.js') %>"></script>
 <% } %>
 </body>
 </html>

@@ -1,0 +1,53 @@
+<%
+const akari = akari_config();
+const searchConfig = akari.search || {};
+const uiActions = akari.ui?.actions || {};
+const searchUrl = url_for(searchConfig.path || '/search.json');
+%>
+
+<%#
+  Search dialog. Rendered on every page but inert until opened — the index is
+  fetched on first open, never on page load.
+
+  The trigger is the button in partial/header.ejs (#search-trigger), which had an
+  aria-label but no handler for as long as this theme has existed: it looked and
+  announced itself as a control and did nothing.
+%>
+<div
+  id="search-dialog"
+  class="fixed inset-0 z-[100] hidden items-start justify-center bg-black/50 p-4 pt-[10vh] backdrop-blur-sm"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="search-dialog-title"
+  data-search-url="<%= searchUrl %>"
+  data-search-max="<%= searchConfig.max_results || 20 %>"
+>
+  <div class="w-full max-w-2xl rounded-2xl bg-white dark:bg-gray-800 shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <h2 id="search-dialog-title" class="sr-only"><%= uiActions.search || '搜索' %></h2>
+
+    <div class="flex items-center gap-3 px-4 border-b border-gray-100 dark:border-gray-700">
+      <svg class="w-5 h-5 flex-shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+      </svg>
+      <input
+        type="search"
+        id="search-input"
+        class="flex-1 py-4 bg-transparent text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none"
+        placeholder="<%= uiActions.search_placeholder || '搜索文章…' %>"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
+        aria-describedby="search-hint"
+        aria-controls="search-results"
+      >
+      <kbd class="hidden sm:inline-flex items-center px-2 py-1 text-xs rounded border border-gray-200 dark:border-gray-600 text-gray-400">Esc</kbd>
+    </div>
+
+    <p id="search-hint" class="px-4 pt-3 text-xs text-gray-400"><%= uiActions.search_hint || '输入关键词，Esc 关闭' %></p>
+
+    <ul id="search-results" class="max-h-[50vh] overflow-y-auto py-2 m-0 list-none" role="listbox" aria-label="搜索结果"></ul>
+
+    <p id="search-status" class="sr-only" role="status" aria-live="polite"></p>
+  </div>
+</div>

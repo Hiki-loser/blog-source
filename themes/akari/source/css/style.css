@@ -779,6 +779,23 @@ body.nav-open {
 }
 
 /* ========================================
+   Visit Counters
+   ======================================== */
+
+/*
+ * Hidden until js/ui.js confirms a counter holds a real value. The numbers come
+ * from a third party; if that script is blocked or slow, labels with no numbers
+ * would be worse than showing nothing.
+ */
+.vercount-wrap {
+  visibility: hidden;
+}
+
+.vercount-wrap.is-ready {
+  visibility: visible;
+}
+
+/* ========================================
    Journal (reduced motion)
    ======================================== */
 

@@ -1,0 +1,80 @@
+<%#
+  Social / search metadata.
+
+  Rendered by layout.ejs. Deliberately hand-written rather than delegated to an
+  SEO plugin: a plugin emits its own tags from its own config and then fights the
+  per-page values here (title, description, noindex), and the theme already knows
+  all of it.
+
+  Before this existed the theme emitted NO Open Graph, NO Twitter card, NO
+  canonical and no robot directives at all — so every link shared to those
+  platforms rendered as a bare URL.
+
+  Computes everything from `page` / `config` rather than reading parent locals:
+  a partial is rendered with its own locals object, and under EJS's `with(locals)`
+  even a `typeof someParentLocal` guard throws a ReferenceError. Only the
+  explicitly passed values are available.
+%>
+<%
+const akari = akari_config();
+const seoKind = typeof kind !== 'undefined' ? kind : 'default';
+const seoDescription = typeof description !== 'undefined' ? description : '';
+const seoCanonical = typeof canonical !== 'undefined' && canonical
+  ? canonical
+  : full_url_for(page.path || '');
+
+const siteName = akari.site?.title || config.title || '';
+const pageHeading = page.title || '';
+const seoTitle = (pageHeading && seoKind !== 'home')
+  ? pageHeading + ' | ' + siteName
+  : siteName;
+const ogLocale = String(config.language || 'zh-CN').replace('-', '_');
+
+/*
+ * og:image MUST be an absolute URL — a relative one is ignored by every crawler.
+ * It must also be deterministic: pointing it at the random-image API would give
+ * every share a different picture and hammer that API from crawlers, so the
+ * cover is used when it is actually set and the avatar otherwise.
+ */
+const coverImage = (page.cover && String(page.cover).trim()) ? String(page.cover).trim() : '';
+const ogImage = full_url_for(coverImage || '/img/avatar.svg');
+%>
+
+<%# canonical: with pretty_urls.trailing_index=false this reads /about/ %>
+<link rel="canonical" href="<%= seoCanonical %>">
+
+<% if (page.noindex) { %>
+<meta name="robots" content="noindex, follow">
+<% } else { %>
+<meta name="robots" content="index, follow">
+<% } %>
+
+<%# Feed discovery: how a browser or feed reader finds the subscription URL %>
+<link rel="alternate" type="application/atom+xml" title="<%= siteName %>" href="<%= full_url_for('/atom.xml') %>">
+
+<meta property="og:type" content="<%= seoKind === 'post' ? 'article' : 'website' %>">
+<meta property="og:site_name" content="<%= siteName %>">
+<meta property="og:title" content="<%= seoTitle %>">
+<meta property="og:description" content="<%= seoDescription %>">
+<meta property="og:url" content="<%= seoCanonical %>">
+<meta property="og:image" content="<%= ogImage %>">
+<meta property="og:locale" content="<%= ogLocale %>">
+
+<% if (seoKind === 'post') { %>
+<meta property="article:published_time" content="<%= new Date(page.date).toISOString() %>">
+<% if (page.updated) { %>
+<meta property="article:modified_time" content="<%= new Date(page.updated).toISOString() %>">
+<% } %>
+<% akari_sort_terms(page.tags, 'name').forEach(function (tag) { %>
+<meta property="article:tag" content="<%= tag.name %>">
+<% }); %>
+<% const cats = page.categories && page.categories.length ? page.categories.toArray() : []; %>
+<% if (cats.length) { %>
+<meta property="article:section" content="<%= cats[cats.length - 1].name %>">
+<% } %>
+<% } %>
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="<%= seoTitle %>">
+<meta name="twitter:description" content="<%= seoDescription %>">
+<meta name="twitter:image" content="<%= ogImage %>">

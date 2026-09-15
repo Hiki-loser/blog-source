@@ -99,6 +99,19 @@ hexo.extend.helper.register('akari_config', function () {
       // Fetched on first dialog open, never on page load.
       max_results: 20
     },
+    // Visit counters. OFF by default: it is the only third-party runtime
+    // dependency left in the theme once Tailwind moved off its CDN, so it has
+    // to be a deliberate choice. The script is injected by scripts/inject.js and
+    // the markup degrades to nothing if it never loads.
+    stats: {
+      enable: false,
+      provider: 'vercount',
+      show_counts: true,
+      // Build-time numbers (post count, total words, last updated) computed
+      // from locals. These always work — no network, no third party — so they
+      // are worth showing even with counters disabled.
+      show_build_stats: true
+    },
     footer: {
       since: currentYear,
       additional: ''
@@ -155,7 +168,8 @@ hexo.extend.helper.register('akari_config', function () {
       },
       pagination: {
         prev: '上一页',
-        next: '下一页'
+        next: '下一页',
+        label: '分页导航'
       },
       post: {
         back: '返回',
@@ -334,6 +348,56 @@ hexo.extend.helper.register('akari_related_posts', function (post) {
 
   return (relatedIndexCache.get(key) || [])
     .filter((other) => String(other.path || '') !== String(post.path || ''));
+});
+
+/**
+ * Build-time site statistics: post count, total words, last update.
+ *
+ * Computed from locals at build time rather than fetched, so unlike the visit
+ * counters these are always present — no network, no third party, nothing to be
+ * blocked. Memoised for the run.
+ *
+ * Word counting handles CJK and Latin separately: counting whitespace-separated
+ * tokens would report a Chinese article as a handful of "words", which is
+ * meaningless. CJK characters are counted individually; runs of Latin letters
+ * count as one word each. Code blocks are excluded, since their contents say
+ * nothing about how much was actually written.
+ */
+let buildStatsCache = null;
+
+hexo.extend.helper.register('akari_build_stats', function () {
+  if (buildStatsCache) return buildStatsCache;
+
+  const model = (hexo.site && hexo.site.posts) || hexo.locals.get('posts') || [];
+  const posts = typeof model.toArray === 'function' ? model.toArray() : [];
+
+  const CJK = /[㐀-䶿一-鿿豈-﫿぀-ヿ]/g;
+  const LATIN = /[A-Za-z][A-Za-z'-]*/g;
+
+  let words = 0;
+  let latest = 0;
+
+  posts.forEach((post) => {
+    const raw = String(post.content || '')
+      .replace(/<figure class="highlight[\s\S]*?<\/figure>/g, ' ') // code blocks
+      .replace(/<pre[\s\S]*?<\/pre>/g, ' ')
+      .replace(/<[^>]*>/g, ' ');
+
+    const cjk = raw.match(CJK);
+    const latin = raw.match(LATIN);
+    words += (cjk ? cjk.length : 0) + (latin ? latin.length : 0);
+
+    const stamp = new Date(post.updated || post.date).getTime();
+    if (stamp > latest) latest = stamp;
+  });
+
+  buildStatsCache = {
+    posts: posts.length,
+    words,
+    lastUpdated: latest ? new Date(latest) : null
+  };
+
+  return buildStatsCache;
 });
 
 hexo.extend.helper.register('akari_sort_terms', function (collection, mode) {

@@ -22,7 +22,10 @@ url: https://hiki-loser.github.io
 permalink: :year/:month/:day/:title/
 permalink_defaults:
 pretty_urls:
-  trailing_index: true # Set to false to remove trailing 'index.html' from permalinks
+  # false so canonical/OG URLs read https://…/about/ rather than
+  # https://…/about/index.html. Search engines treat those as different URLs,
+  # and the trailing form is the one nobody links to.
+  trailing_index: false
   trailing_html: true # Set to false to remove trailing '.html' from permalinks
 
 # Directory
@@ -85,7 +88,13 @@ meta_generator: true
 date_format: YYYY-MM-DD
 time_format: HH:mm:ss
 ## updated_option supports 'mtime', 'date', 'empty'
-updated_option: 'mtime'
+##
+## 'date', not 'mtime'. File mtimes in a git-based workflow are checkout times,
+## not edit times — 'mtime' made article:modified_time in the Open Graph tags
+## and <lastmod> in sitemap.xml claim every post was modified at the moment of
+## the last deploy. 'date' uses the post's own front-matter date, and still
+## honours an explicit `updated:` if one is added later.
+updated_option: 'date'
 
 # Pagination
 ## Set per_page to 0 to disable pagination
@@ -102,6 +111,37 @@ ignore:
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/
 theme: akari
+
+# Site search index (hexo-generator-searchdb).
+#
+# JSON rather than XML: smaller, no XML parsing, and no DOMParser dependency in
+# older WebViews. The front-end dialog is js/search.js and fetches this only on
+# first open, never on page load. The theme's own options for that dialog live
+# under `akari.search` below.
+search:
+  path: search.json
+  field: post
+  # Full post content is needed for body-text matching. At this size (~15 posts)
+  # the index is roughly 40 KB gzipped. Drop to false to search titles and tags
+  # only if the site grows a lot.
+  content: true
+  format: json
+
+# Subscription feed (hexo-generator-feed).
+#
+# The Atom feed IS the subscribe mechanism for a static site — deliberately no
+# Follow.it / FeedBlitz / Mailchimp embed, which would be a third-party script
+# that is slow or blocked in mainland China and would undo the work of moving
+# off the Tailwind CDN.
+feed:
+  type: atom
+  path: atom.xml
+  limit: 20
+  hub:
+  content: false
+  content_limit: 140
+  content_limit_delim: ' '
+  order_by: -date
 
 # Deployment
 ## Docs: https://hexo.io/docs/one-command-deployment

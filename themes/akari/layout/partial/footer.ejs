@@ -6,6 +6,10 @@ const currentYear = new Date().getFullYear();
 const additional = akari.footer?.additional || '';
 const showPoweredBy = akari.footer?.show_powered_by !== false;
 const footerText = akari.ui?.footer || {};
+const statsConfig = akari.stats || {};
+const showBuildStats = statsConfig.show_build_stats !== false;
+const locale = akari.site?.language || config.language || 'zh-CN';
+const buildStats = showBuildStats ? akari_build_stats() : null;
 %>
 
 <footer class="mt-16 border-t border-gray-200 dark:border-gray-800">
@@ -47,5 +51,25 @@ const footerText = akari.ui?.footer || {};
       </div>
       <% } %>
     </div>
+
+    <%
+    /*
+     * Build-time stats always render: they are computed from locals and depend on
+     * nothing at runtime. The visit counters below are a third party and hide
+     * themselves if they never report a value.
+     */
+    %>
+    <% if (buildStats) { %>
+      <div class="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800 flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
+        <span><%= buildStats.posts %> 篇文章</span>
+        <span>约 <%= buildStats.words.toLocaleString(locale) %> 字</span>
+        <% if (buildStats.lastUpdated) { %>
+          <span>更新于 <%= new Date(buildStats.lastUpdated).toLocaleDateString(locale, { year: 'numeric', month: 'long' }) %></span>
+        <% } %>
+        <a href="<%- url_for('/atom.xml') %>" class="hover:text-primary-500 transition-colors">订阅</a>
+      </div>
+    <% } %>
+
+    <%- partial('partial/vercount', { scope: 'site' }) %>
   </div>
 </footer>

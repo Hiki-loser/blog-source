@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+# The Atom feed is the subscription mechanism for this site.
+# Feed: https://hiki-loser.github.io/atom.xml
+
+Sitemap: https://hiki-loser.github.io/sitemap.xml

@@ -123,11 +123,52 @@
     });
   }
 
+  /* ── Visit counters ──────────────────────────────────────────────────── */
+
+  /*
+   * The counter script is a third party (Vercount). Poll briefly for the
+   * counters to be populated, and only then reveal the container. If they never
+   * arrive — blocked, offline, provider down — the block stays hidden and the
+   * reader sees nothing at all, which is the correct failure mode for a metric
+   * nobody needs. Labels with no numbers would look broken.
+   */
+  function initStatsCounters() {
+    var wrap = document.querySelector('[data-vercount-scope]');
+    if (!wrap) return;
+
+    var DEADLINE_MS = 3000;
+    var POLL_MS = 250;
+    var started = Date.now();
+
+    (function poll() {
+      var counters = wrap.querySelectorAll('[id^="vercount_value_"]');
+      var filled = false;
+
+      for (var i = 0; i < counters.length; i++) {
+        var text = (counters[i].textContent || '').trim();
+        // Vercount writes a number; anything else (empty, "-", "N/A") is not a
+        // real value yet.
+        if (text && text !== '-' && /\d/.test(text)) { filled = true; break; }
+      }
+
+      if (filled) {
+        wrap.classList.add('is-ready');
+        return;
+      }
+
+      if (Date.now() - started < DEADLINE_MS) {
+        global.setTimeout(poll, POLL_MS);
+      }
+      // Past the deadline: leave it hidden.
+    })();
+  }
+
   function init() {
     initMobileMenu();
     initDarkToggleState();
     initReadingProgress();
     initBackToTop();
+    initStatsCounters();
   }
 
   if (document.readyState === 'loading') {

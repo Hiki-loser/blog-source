@@ -1,0 +1,29 @@
+<%
+/*
+ * Visit counters, provider: Vercount (busuanzi-compatible element ids).
+ * The script itself is injected by scripts/inject.js — only when
+ * akari.stats.enable is true.
+ *
+ * The container ships with `visibility: hidden` and js/ui.js reveals it only
+ * once a counter actually holds a value. This matters: the numbers arrive from a
+ * third party, and without this a stalled or blocked script would leave an empty
+ * gap with stray labels in the footer — visibly broken — rather than nothing at
+ * all. Failing to show a visitor count is fine; showing "浏览次数：" with no
+ * number is not.
+ */
+const akari = akari_config();
+const statsConfig = akari.stats || {};
+const statsScope = typeof scope !== 'undefined' ? scope : 'site';
+const showCounters = statsConfig.enable && statsConfig.show_counts !== false;
+%>
+
+<% if (showCounters) { %>
+<div class="vercount-wrap flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400" data-vercount-scope="<%= statsScope %>">
+  <% if (statsScope === 'page') { %>
+    <span>本页阅读 <span id="vercount_value_page_pv" class="font-medium">-</span></span>
+  <% } else { %>
+    <span>总访问 <span id="vercount_value_site_pv" class="font-medium">-</span></span>
+    <span>访客 <span id="vercount_value_site_uv" class="font-medium">-</span></span>
+  <% } %>
+</div>
+<% } %>
