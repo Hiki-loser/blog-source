@@ -1,12 +1,11 @@
 ---
 title: 计算机科学导论
 date: 2026-04-22 21:27:00
-categories: technology/computer science
+categories: technology/computer-science
 tags:
   - computer science
   - intro
 description: 计算机科学的基本概念和发展历程介绍。
-cover:
 ---
 # 计算机科学导论
 欢迎来到计算机科学分类 📚

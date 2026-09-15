@@ -8,7 +8,6 @@ tags:
   - 编程
   - 后端
 description: Java 分类总览，从语言基础到工程实践的学习路线。
-cover:
 ---
 
 # Java 分类导读

@@ -89,39 +89,14 @@ if (!musicConfig.enable) return;
 </script>
 <% } %>
 
-<style>
-  .music-player-container {
-    /* Container styles */
-  }
+<%#
+  A <style> block used to live here redefining `.fixed`, `.bottom-4`, `.right-4`
+  and `.z-40` globally, plus its own @keyframes scaleIn and `.animate-scale-in`.
 
-  .fixed {
-    position: fixed;
-  }
-
-  .bottom-4 {
-    bottom: 1rem;
-  }
-
-  .right-4 {
-    right: 1rem;
-  }
-
-  .z-40 {
-    z-index: 40;
-  }
-
-  @keyframes scaleIn {
-    from {
-      transform: scale(0.9);
-      opacity: 0;
-    }
-    to {
-      transform: scale(1);
-      opacity: 1;
-    }
-  }
-
-  .animate-scale-in {
-    animation: scaleIn 0.3s ease-out;
-  }
-</style>
+  Every one of those already exists: the four utilities are standard Tailwind
+  classes, and the animation is declared in tailwind.config.js. Re-declaring them
+  was not merely redundant — it put four site-wide utility classes under the
+  control of a partial that only renders when the music player is enabled, so
+  anything else using `.fixed` or `.z-40` depended on an unrelated feature
+  happening to be on. Removed.
+%>

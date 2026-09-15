@@ -6,7 +6,6 @@ tags:
   - database
   - intro
 description: Database 分类总览，收录 SQL 与正则表达式等内容。
-cover:
 ---
 
 # Database 分类导读

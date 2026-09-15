@@ -6,7 +6,6 @@ tags:
   - back-end
   - server
 description: 后端开发基础知识介绍，包括服务器、数据库、API 等核心概念，以及常用技术栈和工具的概览。
-cover:
 ---
 
 # 后端开发入门

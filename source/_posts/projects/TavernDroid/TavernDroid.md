@@ -7,7 +7,6 @@ tags:
 - Agent
 - intro
 description: TavernDroid 是 SillyTavern 的 Android 原生客户端，完全兼容 ST 角色卡格式，提供流畅的原生体验。本文是 v1.0 的技术设计文档，详细介绍了架构、模块设计、数据库结构、格式兼容实现、LLM Provider 抽象层等核心技术细节。
-cover:
 ---
 # TavernDroid — SillyTavern Android 客户端
 ## v1.0 技术设计文档
@@ -89,7 +88,7 @@ TavernDroid 是 SillyTavern 的 Android 原生客户端，**不依赖任何本�
 
 ### 2.1 架构图
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │                        UI 层 (Compose)                       │
 │  CharacterListScreen  │  ChatScreen  │  SettingsScreen       │
@@ -124,7 +123,7 @@ TavernDroid 是 SillyTavern 的 Android 原生客户端，**不依赖任何本�
 
 ### 2.2 技术栈总览
 
-```
+```text
 语言与运行时：
   Kotlin 1.9+
   Kotlin Coroutines + Flow（异步，类比 CompletableFuture + Stream）
@@ -161,7 +160,7 @@ Markdown 渲染：
 
 ### 2.3 包结构设计
 
-```
+```text
 com.yourname.taverndroid/
 ├── di/                          # 依赖注入模块（Hilt）
 │   ├── DatabaseModule.kt        # Room 数据库提供
@@ -247,7 +246,7 @@ SillyTavern 支持两种角色卡文件格式：
 
 #### 3.1.2 解析流程设计
 
-```
+```text
 用户选择文件（文件选择器 URI）
         │
         ▼
@@ -281,7 +280,7 @@ Reader        │
 
 遵循 [官方规范](https://github.com/malfoyslastname/character-card-spec-v2/blob/main/spec_v2.md)，字段与规范严格对应：
 
-```
+```yaml
 CharacterCardV2:
   spec: String                    // "chara_card_v2"
   spec_version: String            // "2.0"
@@ -309,13 +308,13 @@ CharacterCardV2:
 
 PNG 文件由若干 chunk（数据块）组成，每个 chunk 结构为：
 
-```
+```text
 [4字节 数据长度] [4字节 类型] [N字节 数据] [4字节 CRC校验]
 ```
 
 角色卡数据藏在类型为 `tEXt` 的 chunk 中，格式为：
 
-```
+```text
 keyword (ASCII字符串) + 0x00 (分隔符) + text (Latin-1编码文本)
 ```
 
@@ -338,7 +337,7 @@ keyword (ASCII字符串) + 0x00 (分隔符) + text (Latin-1编码文本)
 
 SillyTavern 发送给 LLM 的消息列表，大致结构如下（从上到下）：
 
-```
+```text
 [system] 主系统提示（可自定义或使用角色的 system_prompt）
 [system] World Info 条目（position=0，在角色描述之前）
 [system] 角色描述块：
@@ -357,7 +356,7 @@ SillyTavern 发送给 LLM 的消息列表，大致结构如下（从上到下）
 
 ST 使用 `{{char}}`、`{{user}}` 等宏变量，在注入前需替换：
 
-```
+```text
 {{char}}  → 角色名称
 {{user}}  → 用户人设名称（默认 "User"）
 {{original}} → 仅在 post_history_instructions 中使用
@@ -367,7 +366,7 @@ ST 使用 `{{char}}`、`{{user}}` 等宏变量，在注入前需替换：
 
 #### 3.2.3 World Info 触发逻辑
 
-```
+```yaml
 输入：
   - messages: 最近 N 条对话（扫描范围）
   - worldInfoEntries: 当前角色的世界书条目列表
@@ -400,7 +399,7 @@ v1.0 采用简化策略，不做精确 Token 计数：
 
 接口只有一个核心方法，返回 `Flow<String>` 实现流式输出：
 
-```
+```text
 interface LLMProvider {
   val id: String                     // 唯一标识，如 "openai", "claude"
   val displayName: String            // 显示名称
@@ -418,7 +417,7 @@ interface LLMProvider {
 
 #### 3.3.2 ProviderConfig 数据模型
 
-```
+```text
 data class ProviderConfig(
   id: String,                // UUID，本地生成
   name: String,              // 用户自定义显示名，如"我的GPT-4配置"
@@ -438,7 +437,7 @@ data class ProviderConfig(
 
 OpenAI 接口采用 SSE（Server-Sent Events）流式协议：
 
-```
+```json
 请求格式（POST /v1/chat/completions）：
 {
   "model": "gpt-4o",
@@ -466,7 +465,7 @@ data: [DONE]
 
 Claude API 格式与 OpenAI **有以下关键差异**：
 
-```
+```json
 1. 端点不同：POST /v1/messages
 2. 认证头不同：x-api-key 而非 Authorization: Bearer
 3. system 消息单独字段，不在 messages 数组中：
@@ -506,7 +505,7 @@ Room 是 Android 官方的 SQLite ORM，与 MyBatis 类比：
 
 #### 4.2.1 CharacterEntity（角色表）
 
-```
+```text
 表名：characters
 
 字段：
@@ -530,7 +529,7 @@ Room 是 Android 官方的 SQLite ORM，与 MyBatis 类比：
 
 #### 4.2.2 ConversationEntity（会话表）
 
-```
+```text
 表名：conversations
 
 字段：
@@ -547,7 +546,7 @@ Room 是 Android 官方的 SQLite ORM，与 MyBatis 类比：
 
 #### 4.2.3 MessageEntity（消息表）
 
-```
+```text
 表名：messages
 
 字段：
@@ -568,7 +567,7 @@ Room 是 Android 官方的 SQLite ORM，与 MyBatis 类比：
 
 #### 4.2.4 WorldInfoEntryEntity（世界书条目表）
 
-```
+```text
 表名：world_info_entries
 
 字段：
@@ -590,7 +589,7 @@ Room 是 Android 官方的 SQLite ORM，与 MyBatis 类比：
 
 #### 4.2.5 ProviderConfigEntity（Provider 配置表）
 
-```
+```text
 表名：provider_configs
 
 字段：
@@ -621,7 +620,7 @@ Room 支持 Migration，从一开始就要建立版本管理意识：
 
 ### 5.1 导入流程完整设计
 
-```
+```text
 用户操作：点击"导入角色卡"按钮
     │
     ▼
@@ -675,7 +674,7 @@ CharacterRepository.insertCharacter(entity)
 
 ### 5.2 文件存储策略
 
-```
+```text
 内部存储布局（getFilesDir()）：
   /avatars/           → 角色头像 PNG 文件
   /charx/             → 原始 CHARX 文件（用于后续提取立绘）
@@ -692,7 +691,7 @@ CharacterRepository.insertCharacter(entity)
 
 SSE 是一种服务器向客户端推送事件的协议，格式为：
 
-```
+```text
 data: {"choices":[{"delta":{"content":"Hello"}}]}
 
 data: {"choices":[{"delta":{"content":" World"}}]}
@@ -716,7 +715,7 @@ data: [DONE]
 
 定义统一的异常体系，Provider 层将网络错误转换为这些异常：
 
-```
+```text
 sealed class LLMException(message: String) : Exception(message) {
   class AuthenticationError(message: String) : LLMException(message)  // 401
   class RateLimitError(message: String) : LLMException(message)       // 429
@@ -729,7 +728,7 @@ sealed class LLMException(message: String) : Exception(message) {
 
 在 ViewModel 中，通过 `catch` 操作符捕获并转换为 UI 状态：
 
-```
+```sql
 provider.streamChat(...)
   .catch { e ->
     when (e) {
@@ -757,7 +756,7 @@ API Key 属于敏感数据，不能明文存储在数据库或 SharedPreferences
 
 假设每天可投入 2-3 小时，全部完成约需 10-14 周。
 
-```
+```text
 阶段1：Android 基础学习（Week 1-2）
 阶段2：工程搭建（Week 3）
 阶段3：格式兼容层（Week 4-5）  ← 最核心
@@ -818,7 +817,7 @@ API Key 属于敏感数据，不能明文存储在数据库或 SharedPreferences
 
 在 `app/build.gradle.kts` 的 `dependencies` 块添加以下依赖（版本号以实际最新稳定版为准）：
 
-```
+```text
 // Compose
 implementation("androidx.compose.ui:ui")
 implementation("androidx.compose.material3:material3")
@@ -933,7 +932,7 @@ implementation("com.github.jeziellago:compose-markdown:0.x")
 
 **Step 3：创建 AppDatabase**
 
-```
+```text
 @Database(
   entities = [CharacterEntity::class, ConversationEntity::class, 
               MessageEntity::class, WorldInfoEntryEntity::class,
@@ -961,7 +960,7 @@ implementation("com.github.jeziellago:compose-markdown:0.x")
 
 **Step 1：定义领域模型**
 
-```
+```text
 data class ChatMessage(
   val id: String,
   val role: MessageRole,   // enum: SYSTEM, USER, ASSISTANT
@@ -999,7 +998,7 @@ data class ChatMessage(
 
 **Step 5：Provider 注册表**
 
-```
+```text
 object ProviderRegistry {
   val providers: Map<String, LLMProvider> = mapOf(
     "openai" to OpenAIProvider(),
@@ -1016,7 +1015,7 @@ object ProviderRegistry {
 
 **页面清单与优先级**：
 
-```
+```text
 高优先级（必须完成）：
   1. 角色卡列表页（CharacterListScreen）
   2. 聊天页（ChatScreen）
@@ -1052,7 +1051,7 @@ object ProviderRegistry {
 
 **ChatViewModel 核心状态**：
 
-```
+```text
 data class ChatUiState(
   val messages: List<MessageUiModel>,    // 显示的消息列表
   val isStreaming: Boolean,              // 是否正在流式输出
@@ -1087,7 +1086,7 @@ LLM 集成测试：
 
 发布前必须完成：
 
-```
+```text
 □ 角色卡列表为空时显示引导（"点击 + 导入你的第一张角色卡"）
 □ 发送消息后输入框自动清空并关闭软键盘
 □ 消息列表在新消息时自动滚动到底部
@@ -1110,7 +1109,7 @@ LLM 集成测试：
 
 ### 8.1 开发环境
 
-```
+```text
 IDE：Android Studio Hedgehog（2023.1.1）或更新版本
   下载：https://developer.android.com/studio
 
@@ -1130,7 +1129,7 @@ Android SDK：
 
 ### 8.2 版本控制规范
 
-```
+```text
 分支策略：
   main         → 始终可发布的稳定代码
   develop      → 开发分支
@@ -1154,7 +1153,7 @@ Tag 规范：
 
 必须配置的文件：
 
-```
+```text
 README.md         → 参见第10章详细说明
 LICENSE           → 推荐 AGPL-3.0（与 SillyTavern 保持一致）
 .gitignore        → Android 标准模板 + 添加 /local.properties
@@ -1177,7 +1176,7 @@ CONTRIBUTING.md   → 贡献指南（吸引社区参与）
 
 ### 9.1 分层测试
 
-```
+```text
 单元测试（src/test/）  ← 不需要 Android 设备，速度快
   - PngChunkReader
   - CharxParser
@@ -1269,7 +1268,7 @@ README 是获得 Star 最重要的因素，结构建议：
 
 ### 10.3 现实 Star 预期
 
-```
+```text
 发布当天（好的情况）：  20-50 stars
 第一个月：            100-300 stars
 v1.0 稳定后：         300-800 stars
@@ -1363,7 +1362,7 @@ SillyTavern 聊天记录格式为 JSONL：
 
 ### C. v1.0 功能完成度自查表
 
-```
+```text
 格式兼容：
   □ PNG 角色卡解析（Character Card V2）
   □ CHARX 角色卡解析

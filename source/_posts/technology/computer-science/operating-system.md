@@ -1,12 +1,11 @@
 ---
 title: 操作系统原理(一)
 date: 2026-04-22 21:36:00
-categories: technology/computer science
+categories: technology/computer-science
 tags:
   - 操作系统
   - computer
 description: 操作系统的基本原理和概念介绍。
-cover:
 ---
 
 # 操作系统

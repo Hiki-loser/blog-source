@@ -7,7 +7,6 @@ tags:
 - Agent
 - LLM
 description: 从零到一的企业级多模态智能工作流平台设计文档，涵盖架构、技术选型、模块设计与开发流程。
-cover:
 ---
 
 # AutoAgent — 企业级多模态智能工作流平台
@@ -85,7 +84,7 @@ cover:
 
 ### 2.1 架构总览
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │                        前端 (React)                          │
 │         WebSocket / REST / SSE                              │
@@ -127,7 +126,7 @@ cover:
 
 **短任务链路（< 30秒，同步 gRPC）：**
 
-```
+```text
 用户发送消息
   → Spring Boot 接收 REST 请求
   → JWT 验证
@@ -141,7 +140,7 @@ cover:
 
 **长任务链路（> 30秒，异步 Kafka）：**
 
-```
+```text
 用户触发工作流任务
   → Spring Boot 接收请求
   → 任务入库 (status=PENDING)
@@ -197,7 +196,7 @@ cover:
 
 **Kafka KRaft 模式关键环境变量：**
 
-```
+```text
 KAFKA_CFG_NODE_ID=1
 KAFKA_CFG_PROCESS_ROLES=broker,controller
 KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
@@ -219,7 +218,7 @@ KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
 
 ### 3.4 项目目录结构总览
 
-```
+```text
 autoagent/
 ├── autoagent-backend/          # Spring Boot 项目
 │   ├── src/main/java/
@@ -731,7 +730,7 @@ os-maven-plugin
 
 **分环境配置结构：**
 
-```
+```text
 src/main/resources/
 ├── application.yml          # 公共配置
 ├── application-dev.yml      # 开发环境
@@ -1095,7 +1094,7 @@ LangGraph 的 Checkpointer 是实现 Human-in-the-loop 的关键。每次节点�
 
 **`app/tools/` 目录结构：**
 
-```
+```text
 tools/
 ├── __init__.py           # 工具注册与导出
 ├── base_tool.py          # 工具基类
@@ -1172,7 +1171,7 @@ MCP（Model Context Protocol）是 Anthropic 提出的工具调用标准协议�
 
 **`app/rag/` 目录：**
 
-```
+```text
 rag/
 ├── document_parser.py     # 文档解析
 ├── text_splitter.py       # 文本切分
@@ -1241,7 +1240,7 @@ rag/
 
 **Prompt 模板（RAG System Prompt）：**
 
-```
+```text
 你是一个专业的企业知识助手。回答问题时，请优先基于以下参考资料：
 
 [参考资料]
@@ -1260,7 +1259,7 @@ rag/
 
 **`app/memory/` 目录：**
 
-```
+```text
 memory/
 ├── short_term_memory.py   # 短期对话记忆
 ├── long_term_memory.py    # 长期用户画像记忆
@@ -1294,7 +1293,7 @@ memory/
 
 **`app/grpc_server/` 目录：**
 
-```
+```text
 grpc_server/
 ├── server.py              # gRPC Server 启动
 ├── agent_servicer.py      # AgentService 实现
@@ -1830,7 +1829,7 @@ Collection 字段：
 
 ### 8.2 页面结构
 
-```
+```text
 pages/
 ├── LoginPage              # 登录页
 ├── RegisterPage           # 注册页
@@ -1878,7 +1877,7 @@ pages/
 
 ### 8.4 Zustand Store 设计
 
-```
+```text
 stores/
 ├── authStore.ts           # 用户认证状态（user, tokens, login/logout）
 ├── conversationStore.ts   # 当前会话列表和激活会话 ID
@@ -2013,7 +2012,7 @@ Python 侧：引入 `opentelemetry-sdk`，在 gRPC Server Interceptor 中提取 
 
 **`docker/docker-compose-prod.yml` 服务列表：**
 
-```
+```yaml
 services:
   mysql          # 挂载数据卷，开启 slow_query_log
   redis          # 开启持久化（RDB + AOF）

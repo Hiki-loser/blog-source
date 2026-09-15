@@ -7,7 +7,6 @@ tags:
   - regular expression
   - regex
 description: 总结学到的正则表达式相关知识
-cover:
 ---
 
 # regular expression (regex)

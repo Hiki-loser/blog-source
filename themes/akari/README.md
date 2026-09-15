@@ -1,342 +1,117 @@
-# Akari - ACG 风格 Hexo 主题
+# Akari
 
-一个简洁、美观、可扩展的 ACG 风格 Hexo 博客主题。
+A Hexo theme. Dark mode, local search, TOC-friendly typography, and no runtime
+CDN dependency.
 
-![Akari Theme](https://img.shields.io/badge/version-1.0.0-primary)
-![Hexo](https://img.shields.io/badge/Hexo-%3E%3D5.0.0-red)
-![License](https://img.shields.io/badge/license-MIT-green)
+Akari is not published to npm and is not a fork of anything — it lives in
+`themes/akari/` of this repository and is versioned with it. To use it, copy the
+directory into another Hexo site's `themes/` and set `theme: akari`.
 
----
+## Requirements
 
-## 特性
+- Hexo 8.x
+- Node >= 20
+- `hexo-renderer-ejs` and `hexo-renderer-marked` (the theme uses EJS layouts,
+  and a filter adjusts the heading anchors marked produces)
 
-- 🎨 ACG 风格设计
-- 🌙 深色模式切换
-- 📱 响应式布局
-- ⚡ 轻量加载
-- 🧩 模块化组件
-- 🎵 音乐播放器
-- 💬 评论系统
-- 🖼️ 每日美图
-
----
-
-## 安装
-
-```bash
-cd your-hexo-blog
-git clone https://github.com/yourname/hexo-theme-akari.git themes/akari
-```
-
-在 Hexo 根目录的 `_config.yml` 中启用主题：
-
-```yaml
-theme: akari
-```
-
-统一配置请优先编辑 Hexo 根目录 `_config.yml` 中的 `akari` 字段。
-
----
-
-## 目录结构
-
-```text
-themes/akari/
-├── _config.yml
-├── layout/
-│   ├── index.ejs
-│   ├── post.ejs
-│   ├── page.ejs
-│   ├── archive.ejs
-│   ├── category.ejs
-│   ├── tag.ejs
-│   └── partial/
-├── source/
-│   ├── css/
-│   ├── js/
-│   └── img/
-└── scripts/
-```
-
----
-
-## 配置
-
-推荐在 Hexo 根目录 `_config.yml` 的 `akari` 字段中管理站点信息、导航、社交、功能开关等配置。
-
-```yaml
-site:
-  title: Hexo
-  subtitle: ''
-  description: ACG 与技术并行的个人博客
-  keywords: [Hexo, ACG, Blog]
-  author: John Doe
-  author_description: 后端开发者 | ACG 爱好者
-  avatar: /img/avatar.svg
-  language: zh-CN
-  since: 2024
-
-nav:
-  - name: 首页
-    path: /
-  - name: 归档
-    path: /archives
-  - name: 分类
-    path: /categories
-  - name: 标签
-    path: /tags
-  - name: 关于
-    path: /about
-
-social:
-  github: https://github.com/yourname
-  email: mailto:your.email@example.com
-
-akari:
-  home:
-  featured_count: 3
-  daily_image:
-    enable: true
-    api: https://uapis.cn/api/v1/random/image?category=acg&type=pc
-    alt_text: 每日 ACG 美图
-    refresh: true
-    background_image:
-      enable: true
-      api: https://uapis.cn/api/v1/random/image?category=landscape
-    stats:
-      enable: true
-
-dark_mode:
-  enable: true
-  default: auto
-
-music:
-  enable: false
-  type: netease
-  playlist_id: ''
-  auto: false
-
-comment:
-  enable: false
-  type: giscus
-```
-
----
-
-## 自定义
-
-- 修改配色：编辑 `source/css/style.css`
-- 添加自定义样式：在 `source/css/` 下新增文件并引入
-- 扩展组件：在 `layout/partial/` 下新增组件并引用
-
----
-
-## 致谢
-
-- Hexo
-- Tailwind CSS
-- kun-touchgal-next# Akari - ACG 风格 Hexo 主题
-
-一个简洁、美观、可扩展的 ACG 风格 Hexo 博客主题。
-
-## Akari - ACG 风格 Hexo 主题
-
-一个简洁、美观、可扩展的 ACG 风格 Hexo 博客主题。
-
-![Akari Theme](https://img.shields.io/badge/version-1.0.0-primary)
-![Hexo](https://img.shields.io/badge/Hexo-%3E%3D5.0.0-red)
-![License](https://img.shields.io/badge/license-MIT-green)
-
----
-
-## 特性
-
-- 🎨 ACG 风格设计
-- 🌙 深色模式切换
-- 📱 响应式布局
-- ⚡ 轻量加载
-- 🧩 模块化组件
-- 🎵 音乐播放器
-- 💬 评论系统
-- 🖼️ 每日美图
-
----
-
-## 安装
-
-```bash
-cd your-hexo-blog
-git clone https://github.com/yourname/hexo-theme-akari.git themes/akari
-```
-
-在 Hexo 根目录的 `_config.yml` 中启用主题：
-
-```yaml
-theme: akari
-```
-
-统一配置请优先编辑 Hexo 根目录 `_config.yml` 中的 `akari` 字段。
-
----
-
-## 目录结构
+The theme has no build step of its own. The compiled stylesheet it consumes is
+built by the *site*, from `themes/akari/assets/`:
 
 ```
-themes/akari/
-├── _config.yml
-├── layout/
-│   ├── index.ejs
-│   ├── post.ejs
-│   ├── page.ejs
-│   ├── archive.ejs
-│   ├── category.ejs
-│   ├── tag.ejs
-│   └── partial/
-├── source/
-│   ├── css/
-│   ├── js/
-│   └── img/
-└── scripts/
+themes/akari/assets/tokens.css       design tokens — the only file with colour values
+themes/akari/assets/tailwind.src.css Tailwind entry point
+themes/akari/source/css/tailwind.css build OUTPUT, committed
+themes/akari/source/css/style.css    hand-written CSS, consumes the tokens
 ```
 
----
+`npm run build:css` (PostCSS: import → Tailwind v3 → autoprefixer → cssnano)
+produces the committed `tailwind.css`. Rebuild it whenever `tokens.css`,
+`tailwind.config.js`, or any class name changes; CI fails the deploy if the
+committed file is out of date.
 
-## 配置
+## Layout structure
 
-推荐在 Hexo 根目录 `_config.yml` 的 `akari` 字段中管理站点信息、导航、社交、功能开关等配置：
+`layout/layout.ejs` is the only file containing `<!DOCTYPE html>`. Hexo wraps
+every other layout with it automatically — a layout resolves to `layout` unless
+it declares its own, so no child layout needs a `layout:` key. Deleting that file
+silently unwraps the entire theme.
 
-```yaml
-site:
-  title: Hexo
-  subtitle: ''
-  description: ACG 与技术并行的个人博客
-  keywords: [Hexo, ACG, Blog]
-  author: John Doe
-  author_description: 前端开发者 | ACG 爱好者
-  avatar: /img/avatar.svg
+Each child layout renders its own `<main>` content only:
 
-nav:
-  - name: 首页
-    path: /
-  - name: 归档
-    path: /archives
-  - name: 分类
-    path: /categories
-  - name: 标签
-    path: /tags
-  - name: 关于
-    path: /about
+| Layout | Route | Notes |
+|---|---|---|
+| `index.ejs` | `/`, `/page/N/` | home + pagination, widest column |
+| `post.ejs` | an article | cover, TOC-friendly prose, prev/next, related |
+| `page.ejs` | `/about/`, `/quiz/` | generic page |
+| `archive.ejs` | `/archives/**` | timeline |
+| `category.ejs` | `/categories/**` | card grid on the index, post list on a term |
+| `tag.ejs` | `/tags/**` | tag cloud on the index, post list on a term |
 
-social:
-  github: https://github.com/yourname
-  email: mailto:your.email@example.com
+Page type is derived in `layout.ejs` from the locals Hexo actually sets
+(`__post`, `archive`, `tag`, `category`, `layout`, `__index`) — not guessed.
 
-akari:
-  home:
-  featured_count: 3
-  daily_image:
-    enable: true
-    api: https://uapis.cn/api/v1/random/image?category=acg&type=pc
-    alt_text: 每日 ACG 美图
-    refresh: true
-    background_image:
-      enable: true
-      api: https://uapis.cn/api/v1/random/image?category=landscape
-    stats:
-      enable: true
+## Configuration
 
-dark_mode:
-  enable: true
-  default: auto
+All theme options and defaults live in `themes/akari/scripts/akari-config.js`.
+Override any of them under the `akari:` key of the site's `_config.yml`; the
+merge is shallow for arrays, so replacing `nav` means supplying the whole list.
 
-music:
-  enable: false
-  type: netease
-  playlist_id: ''
-  auto: false
+Notable keys: `site`, `nav`, `social`, `home.daily_image`,
+`home.background_image`, `search`, `stats`, `dark_mode`, `music`, `comment`,
+`footer`, `ui` (all display strings).
 
-comment:
-  enable: false
-  type: giscus
+Plugins the theme expects at the site level:
+
+- `hexo-generator-searchdb` — produces `search.json` for the search dialog
+  (configured under the site's own `search:` key, not under `akari:`)
+- `hexo-generator-feed` — produces `atom.xml`, offered as the subscription link
+
+## Theme scripts
+
+`scripts/` is loaded by Hexo at startup. Each file is one concern:
+
+| File | Responsibility |
+|---|---|
+| `akari-config.js` | config merge + the helpers every layout calls |
+| `inject.js` | third-party snippets (visit counters), config-gated |
+| `seo.js` | `sitemap.xml` |
+| `redirects.js` | redirect stubs, from `source/_data/redirects.yml` |
+| `stable-output.js` | makes generated data files byte-reproducible |
+| `heading-anchors.js` | takes `marked`'s heading anchors out of the tab order |
+
+## Things worth knowing before changing anything
+
+These are all load-bearing decisions with a comment at the point of use
+explaining the reasoning at length. Summarised here so they are not undone by
+accident:
+
+- **No CDN at runtime.** Tailwind is compiled locally. It used to load
+  `cdn.tailwindcss.com`, which is unreachable from mainland China and compiled
+  CSS in the browser, so the site was unstyled for its actual readers. Do not
+  reintroduce it, and treat any new third-party runtime dependency the same way.
+- **The random-image backdrop loads on the home page only**, and cannot be
+  cached. See the header of `source/js/api-image.js` for the tested reasons
+  before attempting to add caching.
+- **Dark mode is a token swap.** `style.css` contains no colour literals and no
+  `.dark` override blocks; every colour comes from `assets/tokens.css`.
+- **Scroll reveal animates position, never opacity.** Two earlier versions made
+  articles invisible when JS failed or the observer did not fire. Do not
+  reintroduce opacity there.
+- **Cases differ only one way.** `tools/verify-taxonomy.js` fails the build on
+  tags or categories that differ only by letter case, because they collide on
+  case-insensitive filesystems and make builds non-reproducible.
+
+## Tools
+
+Run from the site root:
+
+```
+node tools/verify-class-coverage.js public   # no Tailwind class was purged
+node tools/verify-taxonomy.js                # no case-colliding tags/categories
+node tools/test-api-image.js                 # image loader behaviour
+node tools/serve-public.js [port]            # serve public/ as production would
 ```
 
----
+## Licence
 
-## 自定义
-
-- 修改配色：编辑 `source/css/style.css`
-- 添加自定义样式：在 `source/css/` 下新增文件并引入
-- 扩展组件：在 `layout/partial/` 下新增组件并引用
-
----
-
-## 致谢
-
-- Hexo
-- Tailwind CSS
-- kun-touchgal-next
-
-### 接入新的 ACG 图片 API
-
-编辑 Hexo 根目录 `_config.yml` 的 `akari.home.daily_image.api`：
-
-```yaml
-akari:
-  home:
-    daily_image:
-      api: https://your-api.com/image
-```
-
-### 添加新的社交链接
-
-在 `layout/partial/social-links.ejs` 中添加：
-
-```ejs
-<% if (social.your_platform) { %>
-  <a href="<%= social.your_platform %>" class="...">
-    <!-- SVG Icon -->
-  </a>
-<% } %>
-```
-
-### 集成新的评论系统
-
-在 `layout/partial/comments.ejs` 中添加对应平台的代码。
-
----
-
-## 浏览器支持
-
-- Chrome (最新)
-- Firefox (最新)
-- Safari (最新)
-- Edge (最新)
-- 移动端浏览器
-
----
-
-## 许可证
-
-MIT License
-
----
-
-## 致谢
-
-- [Hexo](https://hexo.io/) - 快速、简洁且高效的博客框架
-- [Tailwind CSS](https://tailwindcss.com/) - 实用优先的 CSS 框架
-- [kun-touchgal-next](https://github.com/KUN1007/kun-touchgal-next) - 设计灵感来源
-
----
-
-## 反馈与支持
-
-如有问题或建议，欢迎提 Issue 或加入讨论组。
-
-- Telegram: [链接]
-- Discord: [链接]
-- Email: your.email@example.com
-
----
-
-**Made with 💜 for ACG lovers**
+MIT

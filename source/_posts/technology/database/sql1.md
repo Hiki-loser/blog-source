@@ -6,7 +6,6 @@ tags:
   - database
   - SQL
 description: SQL 语法入门与进阶，涵盖基本查询、数据操作、表结构修改、连接查询、分组与排序等内容。
-cover:
 ---
 
 # SQL 基础语法

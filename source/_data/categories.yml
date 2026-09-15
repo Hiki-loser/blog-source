@@ -1,3 +1,21 @@
+# Category presentation metadata.
+#
+# Keys under `subcategories` are the LEAF segment of a post's category path.
+# A post with `categories: technology/database` is looked up as
+# categoriesData["technology"].subcategories["database"]. The helper that does
+# this is akari_category_meta in themes/akari/scripts/akari-config.js.
+#
+# This file previously did not parse at all. The `projects:` block declared
+# `name:` and `description:` TWICE at the same level, and js-yaml rejects
+# duplicated mapping keys outright — it does not silently keep the last one. Hexo
+# logged "Process failed: _data/categories.yml" and carried on, so
+# site.data.categories was empty and this entire file had no effect: the
+# /categories/ page rendered raw paths like "technology/computer science" as its
+# card titles, and every icon and description here was dead.
+#
+# `icon` must be a key in the iconMap of layout/partial/categories.ejs
+# (code / heart / star / folder). Anything else falls back to `folder`.
+
 technology:
   name: 技术专区
   icon: code
@@ -13,23 +31,30 @@ technology:
       name: Database
       description: 数据库技术
     back-end:
-      name: back-end
+      name: 后端开发
       description: 后端开发相关技术
-    computer science:
-      name: Computer Science
+    computer-science:
+      name: 计算机科学
       description: 计算机科学相关知识
     python:
       name: Python
       description: Python 技术栈
     documentation:
-      name: Documentation
+      name: 文档与教程
       description: 技术文档与教程
-      
+
 projects:
-    name: autoagent
-    description: 一个基于 AI Agent 的自动化项目
-    name: TavernDroid
-    description: SillyTavern 的 Android 原生客户端
+  name: 项目
+  icon: star
+  description: 个人项目作品
+  subcategories:
+    autoagent:
+      name: AutoAgent
+      description: 一个基于 AI Agent 的自动化项目
+    TavernDroid:
+      name: TavernDroid
+      description: SillyTavern 的 Android 原生客户端
+
 essay:
   name: 随笔
   icon: heart
@@ -38,6 +63,10 @@ essay:
     reflections:
       name: 感悟
       description: 对生活和世界的思考与感悟
+
+# No posts use this yet. Kept as a declared category so the metadata is ready
+# when they do; akari_sort_terms only lists categories that actually have posts,
+# so this stays invisible until then.
 ACG:
   name: ACG
   icon: star

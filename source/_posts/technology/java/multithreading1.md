@@ -6,7 +6,6 @@ tags:
   - Java
   - multithreading
 description: Java 多线程编程入门，介绍线程的基本概念、创建线程的方法以及线程的生命周期。
-cover:
 ---
 # Java 多线程编程（一）
 

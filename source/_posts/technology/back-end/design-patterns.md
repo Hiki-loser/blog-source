@@ -5,7 +5,6 @@ categories: technology/back-end
 tags:
   - design patterns
 description: 设计模式是软件开发中常用的解决方案，本文介绍了常见的设计模式及其应用场景，帮助开发者提高代码的可维护性和扩展性。
-cover:
 ---
 
 # 设计模式（一）

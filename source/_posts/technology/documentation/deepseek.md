@@ -6,6 +6,7 @@ tags:
     - deepseek
     - api
     - documentation
+description: DeepSeek API 的接入与使用指南，涵盖鉴权、对话补全、流式输出与多轮上下文等常用能力。
 ---
 
 # 首次调用 Deepseek API

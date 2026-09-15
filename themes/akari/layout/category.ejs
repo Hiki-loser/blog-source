@@ -41,18 +41,17 @@ const categoryCardsFallback = isCategoryIndex
           return akari_is_intro_post(post);
         }).sort(byDateDesc);
 
-        const parent = category.parent || null;
-        const topKey = String((parent && parent.name) || category.name || '');
-        const leafKey = String(category.name || '');
-        const topMeta = categoryDataConfig[topKey] || {};
-        const subMeta = (topMeta.subcategories && topMeta.subcategories[leafKey]) || {};
+        // Same resolver the helper and the sidebar use — see
+        // akari_category_meta in scripts/akari-config.js for why the leaf
+        // segment is the lookup key.
+        const meta = akari_category_meta(category.name);
 
         return {
           path: category.path,
           key: category.name,
-          name: subMeta.name || category.name,
-          groupName: topMeta.name || topKey,
-          description: subMeta.description || topMeta.description || '',
+          name: meta.leafName,
+          groupName: meta.topName,
+          description: meta.description,
           introPost: introPosts[0] || null,
           postCount: Number(category.length || categoryPosts.length || 0)
         };

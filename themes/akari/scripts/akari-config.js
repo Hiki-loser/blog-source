@@ -5,8 +5,64 @@
  */
 let relatedIndexCache = null;
 
+/**
+ * Read source/_data/categories.yml.
+ *
+ * `hexo.site` is NOT where this lives. Hexo sets `this.site` on the per-render
+ * Locals instance, and helpers are invoked with that instance bound as `this`
+ * (hexo/dist/theme/view.js: `helpers[key].bind(locals)`). Reading `hexo.site`
+ * therefore yields undefined, silently. Every helper in this file used to do
+ * exactly that, so site.data.categories was always {} — combined with
+ * categories.yml being unparseable, the whole category-metadata feature did
+ * nothing.
+ */
+function categoriesDataFrom(locals) {
+  const site = (locals && locals.site) || {};
+  return (site.data && site.data.categories) || {};
+}
+
+/**
+ * Resolve presentation metadata for a category name.
+ *
+ * `category.name` is the FULL path — a post with `categories: technology/database`
+ * yields the category name "technology/database", and `category.parent` is
+ * undefined. Every lookup here used to treat that whole string as both the top
+ * key and the leaf key, so nothing ever matched and callers fell back to the raw
+ * path (which is why /categories/ displayed "technology/computer science" as a
+ * card title).
+ *
+ * Splitting on "/" makes the leaf segment the lookup key, matching the shape of
+ * categories.yml.
+ */
+function categoryMetaFrom(locals, name) {
+  const data = categoriesDataFrom(locals);
+  const parts = String(name || '').split('/').filter(Boolean);
+
+  if (!parts.length) {
+    return { topName: '', leafName: '', description: '', icon: 'folder' };
+  }
+
+  const topKey = parts[0];
+  const leafKey = parts[parts.length - 1];
+  const topMeta = data[topKey] || {};
+  const subMeta = (topMeta.subcategories && topMeta.subcategories[leafKey]) || {};
+
+  return {
+    // Fall back to the leaf segment rather than the full path, so a missing
+    // entry degrades to "database" instead of "technology/database".
+    topName: topMeta.name || topKey,
+    leafName: subMeta.name || leafKey,
+    description: subMeta.description || topMeta.description || '',
+    icon: subMeta.icon || topMeta.icon || 'folder',
+  };
+}
+
+hexo.extend.helper.register('akari_category_meta', function (name) {
+  return categoryMetaFrom(this, name);
+});
+
 hexo.extend.helper.register('akari_config', function () {
-  const categoriesData = (hexo.site && hexo.site.data && hexo.site.data.categories) || {};
+  const categoriesData = categoriesDataFrom(this);
   const siteConfig = hexo.config || {};
   const rootAkariConfig = siteConfig.akari || {};
   const currentYear = new Date().getFullYear();
@@ -368,7 +424,7 @@ let buildStatsCache = null;
 hexo.extend.helper.register('akari_build_stats', function () {
   if (buildStatsCache) return buildStatsCache;
 
-  const model = (hexo.site && hexo.site.posts) || hexo.locals.get('posts') || [];
+  const model = (this.site && this.site.posts) || hexo.locals.get('posts') || [];
   const posts = typeof model.toArray === 'function' ? model.toArray() : [];
 
   const CJK = /[㐀-䶿一-鿿豈-﫿぀-ヿ]/g;
@@ -432,11 +488,12 @@ hexo.extend.helper.register('akari_sort_terms', function (collection, mode) {
 hexo.extend.helper.register('akari_category_cards', function () {
   const siteConfig = hexo.config || {};
   const akari = siteConfig.akari || {};
-  const categoriesData = (hexo.site && hexo.site.data && hexo.site.data.categories) || {};
   const suffix = (akari.category && akari.category.intro_suffix) || '-intro';
   const introOnly = (akari.category && akari.category.intro_only) !== false;
+  // Helpers are bound to the per-render locals, which is where `.site` lives.
+  const locals = this;
 
-  const categoriesModel = (hexo.site && hexo.site.categories) || [];
+  const categoriesModel = (locals.site && locals.site.categories) || [];
   const categories = typeof categoriesModel.toArray === 'function' ? categoriesModel.toArray() : categoriesModel;
 
   function isIntro(post) {
@@ -454,26 +511,13 @@ hexo.extend.helper.register('akari_category_cards', function () {
     return fileName.endsWith(suffix) || slug.endsWith(suffix) || pathSegment.endsWith(suffix);
   }
 
-  function resolveCategoryMeta(topKey, leafKey) {
-    const topMeta = categoriesData[topKey] || {};
-    const subMeta = (topMeta.subcategories && topMeta.subcategories[leafKey]) || {};
-
-    return {
-      topName: topMeta.name || topKey,
-      leafName: subMeta.name || leafKey,
-      description: subMeta.description || topMeta.description || '',
-      icon: subMeta.icon || topMeta.icon || 'folder'
-    };
-  }
-
   const cards = categories
     .map((category) => {
       const postsModel = category && category.posts ? category.posts : [];
       const posts = typeof postsModel.toArray === 'function' ? postsModel.toArray() : postsModel;
-      const parent = category && category.parent ? category.parent : null;
-      const topKey = String((parent && parent.name) || category.name || '');
-      const leafKey = String(category.name || '');
-      const meta = resolveCategoryMeta(topKey, leafKey);
+      // Shared with the sidebar and the category page's own fallback, so all
+      // four lookup sites cannot disagree about the key shape again.
+      const meta = categoryMetaFrom(locals, category.name);
 
       let introPost = null;
       posts.forEach((post) => {
@@ -507,6 +551,5 @@ hexo.extend.helper.register('akari_category_cards', function () {
 });
 
 hexo.extend.helper.register('get_category_structure', function () {
-  const categoriesData = (hexo.site && hexo.site.data && hexo.site.data.categories) || {};
-  return categoriesData;
+  return categoriesDataFrom(this);
 });
