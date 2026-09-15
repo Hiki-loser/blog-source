@@ -141,14 +141,28 @@ const dailyImageEnabled = akari.home?.daily_image?.enable !== false && !!akari.h
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300">
 
+<%#
+  Lets keyboard users jump past the logo, nav and action buttons, which are
+  otherwise ~9 tab stops before the content on every single page.
+%>
+<a href="#main" class="skip-link"><%= ui.actions?.skip_to_content || '跳到主要内容' %></a>
+
 <div class="min-h-screen">
   <%- partial('partial/header') %>
 
-  <main class="container mx-auto px-4 py-8 <%= mainClass %>">
+  <% if (kind === 'post') { %>
+    <div id="reading-progress" role="presentation"></div>
+  <% } %>
+
+  <main id="main" class="container mx-auto px-4 py-8 <%= mainClass %>">
     <%- body %>
   </main>
 
   <%- partial('partial/footer') %>
+
+  <button type="button" id="back-to-top" aria-label="<%= ui.actions?.back_to_top || '回到顶部' %>">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
+  </button>
 
   <% if (akari.music?.enable) { %>
     <%- partial('partial/music-player') %>
@@ -156,6 +170,7 @@ const dailyImageEnabled = akari.home?.daily_image?.enable !== false && !!akari.h
 </div>
 
 <script src="<%- url_for('/js/dark-mode.js') %>"></script>
+<script src="<%- url_for('/js/ui.js') %>"></script>
 <% if (needsTooltip) { %>
 <script src="<%- url_for('/js/hover-tooltip.js') %>"></script>
 <% } %>

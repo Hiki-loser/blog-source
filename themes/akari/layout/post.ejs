@@ -50,7 +50,13 @@ const categoryPostsWithoutCurrent = isIntroPost && currentLeafCategory
 <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-700">
   <% if (page.cover && String(page.cover).trim()) { %>
     <div class="aspect-[21/9] overflow-hidden">
-      <img src="<%= page.cover %>" alt="<%= page.title %>" class="w-full h-full object-cover" />
+      <%#
+        Deliberately NOT lazy: this is above the fold and is the LCP element on
+        an article page, so deferring it would make the page feel slower.
+        alt="" because the <h1> directly below already announces the title; a
+        non-empty alt had screen readers announce it twice.
+      %>
+      <img src="<%= page.cover %>" alt="" decoding="async" fetchpriority="high" class="w-full h-full object-cover" />
     </div>
   <% } %>
 

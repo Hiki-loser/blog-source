@@ -7,22 +7,29 @@
  * like `bg-primary-500` and hand-written CSS using var(--color-primary-500)
  * are guaranteed to be the same value.
  *
- * Colours are stored as space-separated RGB *channel triplets*, not hex.
- * That is what lets Tailwind apply an opacity modifier (`primary-500/25`);
- * `rgb(#d675ff / .25)` is invalid CSS, `rgb(214 117 255 / .25)` is not.
+ * Colours consumed with an alpha modifier are stored as space-separated RGB
+ * *channel triplets*, not hex. That is what makes `rgb(var(--link) / .5)`
+ * possible; `rgb(#a828f9 / .5)` is invalid CSS.
  *
- * These values are a verbatim conversion of the palette that previously lived
- * in the inline `tailwind.config = {...}` block duplicated across all six
- * layout files (index.ejs:26-44). Each was round-trip validated as it was
- * converted, so there is no transcription drift.
+ * TWO LAYERS:
+ *   1. the brand ramp — referenced by tailwind.config.js and by nothing else;
+ *   2. semantic roles — what style.css actually consumes. Everything downstream
+ *      asks for "the link colour", never "primary-700 at 4.84:1 on white".
  *
- * Layer 2 (semantic role tokens) is added in a later phase; this file
- * deliberately starts with the brand ramp only, so the local build can be
- * proven pixel-identical to the CDN build before anything else changes.
+ * The `.dark` block redefines only layer 2. That is the whole dark-mode
+ * mechanism: swap ~35 values, and every rule below follows. Previously dark mode
+ * meant a Tailwind `dark:` variant AND ~19 hand-written `.dark X` override
+ * blocks with their own hardcoded literals, all of which could drift apart.
  */
 
 :root {
-  /* ── brand: primary (fuchsia / purple) ─────────────────────────── */
+  /* ══ LAYER 1 — brand ramp ══════════════════════════════════════════════
+     Verbatim conversion of the palette that used to live in the inline
+     `tailwind.config = {...}` duplicated across all six layout files. Each
+     value was round-trip validated during conversion, so there is no
+     transcription drift. */
+
+  /* primary (fuchsia / purple) */
   --color-primary-50: 254 247 255;
   --color-primary-100: 250 238 255;
   --color-primary-200: 245 223 255;
@@ -35,7 +42,7 @@
   --color-primary-900: 117 30 170;
   --color-primary-950: 79 13 122;
 
-  /* ── brand: secondary (violet) ─────────────────────────────────── */
+  /* secondary (violet) */
   --color-secondary-50: 245 243 255;
   --color-secondary-100: 237 233 254;
   --color-secondary-200: 221 214 254;
@@ -47,7 +54,7 @@
   --color-secondary-800: 91 33 182;
   --color-secondary-900: 76 29 149;
 
-  /* ── brand: accent (fuchsia) ───────────────────────────────────── */
+  /* accent (fuchsia) */
   --color-accent-50: 253 244 255;
   --color-accent-100: 250 232 255;
   --color-accent-200: 245 208 254;
@@ -58,4 +65,226 @@
   --color-accent-700: 162 28 175;
   --color-accent-800: 134 25 143;
   --color-accent-900: 112 26 117;
+
+  /* ══ LAYER 2 — semantic roles (light) ═════════════════════════════════ */
+
+  /* surfaces */
+  --surface-bg: 249 250 251;      /* gray-50  */
+  --surface-card: 255 255 255;
+  --surface-muted: 243 244 246;   /* gray-100 */
+  --surface-inset: 249 250 251;
+
+  /* borders */
+  --border-subtle: 229 231 235;   /* gray-200 */
+  --border-strong: 209 213 219;   /* gray-300 */
+  --border-prose: 229 231 235;
+  --border-prose-dark-hint: 55 65 81;
+
+  /* text */
+  --text-strong: 17 24 39;        /* gray-900 */
+  --text-body: 55 65 81;          /* gray-700 */
+  --text-muted: 107 114 128;      /* gray-500 */
+
+  /* Link colours. These are the contrast-corrected pair; see the note in
+     style.css next to `.prose a`. #d675ff was measured at 2.68:1 on white,
+     well under the 4.5:1 AA floor for body text. */
+  --link: 168 40 249;             /* primary-700 — 4.84:1 on white */
+  --link-hover: 141 31 208;       /* primary-800 — 6.48:1 on white */
+
+  /* Inline code. #a855f7 measured 3.53:1 on its own 12% primary tint. */
+  --code-inline-fg: 141 31 208;   /* primary-800 — 5.79:1 */
+  --code-inline-base: 214 117 255;/* primary-500, applied at low alpha */
+  --code-inline-bg-alpha: 0.12;
+  --code-inline-border-alpha: 0.18;
+  --code-line-hover-alpha: 0.05;
+
+  /* Block-level code block elevation */
+  --shadow-code: 0 12px 30px rgb(15 23 42 / 0.08);
+
+  /* Brand gradient endpoints */
+  --brand-from: 214 117 255;
+  --brand-to: 124 58 237;
+
+  --selection-base: 214 117 255;
+  --selection-alpha: 0.3;
+
+  /* Scrollbar */
+  --scrollbar-from: 214 117 255;
+  --scrollbar-to: 139 92 246;
+  --scrollbar-from-hover: 193 70 255;
+  --scrollbar-to-hover: 124 58 237;
+
+  /* Loading shimmer */
+  --shimmer-from: 240 240 240;
+  --shimmer-via: 224 224 224;
+  --shimmer-to: 240 240 240;
+
+  /* Glass surfaces */
+  --glass-bg: 255 255 255;
+  --glass-alpha: 0.8;
+  --glass-border-alpha: 0.3;
+
+  /* Inline tooltip (.hover-tip) */
+  --tip-bg: 214 117 255;
+  --tip-bg-alpha: 0.14;
+  --tip-bg-alpha-hover: 0.22;
+  --tip-fg: 124 58 237;           /* secondary-600 — 5.15:1 on its own tint */
+
+  /* Floating tooltip bubble */
+  --tooltip-bg: 17 24 39;
+  --tooltip-fg: 249 250 251;
+
+  /* Blockquote */
+  --quote-border: 214 117 255;
+  --quote-fg: 107 114 128;
+
+  /* Backdrop layer */
+  --backdrop-opacity: 0.1;
+
+  /* Blockquote / prose surface accents */
+  --prose-th-bg: 214 117 255;
+
+  /* ══ Shape, elevation, motion, type ═══════════════════════════════════ */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-card: 1rem;
+  --radius-pill: 9999px;
+
+  --shadow-card: 0 1px 2px rgb(17 24 39 / 0.04), 0 8px 24px -12px rgb(17 24 39 / 0.12);
+  --shadow-card-hover: 0 2px 4px rgb(17 24 39 / 0.06), 0 16px 32px -16px rgb(214 117 255 / 0.28);
+  --shadow-brand: 0 10px 30px -12px rgb(214 117 255 / 0.45);
+  --shadow-tooltip: 0 10px 28px rgb(2 6 23 / 0.35);
+
+  --duration-fast: 150ms;
+  --duration-base: 220ms;
+  --duration-slow: 400ms;
+  --ease-out-soft: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  /* The phantom 'JetBrains Mono' / 'Fira Code' names were removed: neither was
+     ever loaded, so every code block silently fell through to Consolas anyway.
+     No webfont is introduced on purpose — a CJK-capable webfont is multi-MB and
+     every China-reachable font CDN is a liability. The system stack below is
+     the correct choice for this audience. */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial,
+    'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+
+  --content-width: 56rem;
+  --content-width-wide: 80rem;
+
+  --reading-progress-h: 3px;
+
+  /* ══ Code highlighting ════════════════════════════════════════════════
+     These names are unchanged from where they used to live (scoped to
+     `.prose figure.highlight`). They are hoisted to :root/.dark so the quiz
+     page and any future component can reuse them — this was the one part of
+     the theme already built as a variable system. */
+  --code-bg: #f8fafc;
+  --code-surface: #eef2f7;
+  --code-border: #d8dee9;
+  --code-text: #1f2937;
+  --code-muted: #64748b;
+  --code-line: #cbd5e1;
+  --code-keyword: #7c3aed;
+  --code-built-in: #0f766e;
+  --code-string: #b45309;
+  --code-number: #0ea5e9;
+  --code-comment: #64748b;
+  --code-function: #2563eb;
+  --code-class: #b42318;
+  --code-operator: #475569;
+  --code-punctuation: #64748b;
+  --code-attr: #d946ef;
+  --code-addition: #15803d;
+  --code-deletion: #dc2626;
+}
+
+/*
+ * Dark mode — layer 2 only.
+ *
+ * Same specificity as :root, so this must come after it. Applied by adding
+ * `.dark` to <html>; dark-mode.js owns the class, and an inline script in
+ * layout.ejs sets it before first paint to avoid a light flash.
+ */
+.dark {
+  --surface-bg: 17 24 39;         /* gray-900 */
+  --surface-card: 31 41 55;       /* gray-800 */
+  --surface-muted: 55 65 81;      /* gray-700 */
+  --surface-inset: 17 24 39;
+
+  --border-subtle: 55 65 81;
+  --border-strong: 75 85 99;
+  --border-prose: 55 65 81;
+  --border-prose-dark-hint: 75 85 99;
+
+  --text-strong: 243 244 246;
+  --text-body: 209 213 219;
+  --text-muted: 156 163 175;
+
+  /* primary-300 — 9.95:1 on gray-900 */
+  --link: 196 181 253;
+  --link-hover: 226 162 255;
+
+  /* primary-400 on its own 15% tint — 7.28:1 */
+  --code-inline-fg: 226 162 255;
+  --code-inline-base: 168 40 249;
+  --code-inline-bg-alpha: 0.15;
+  --code-inline-border-alpha: 0.2;
+  --code-line-hover-alpha: 0.08;
+
+  --shadow-code: 0 16px 36px rgb(2 6 23 / 0.45);
+
+  --selection-base: 168 40 249;
+  --selection-alpha: 0.4;
+
+  --scrollbar-from: 168 40 249;
+  --scrollbar-to: 109 40 217;
+  --scrollbar-from-hover: 196 181 253;
+  --scrollbar-to-hover: 139 92 246;
+
+  --shimmer-from: 26 26 26;
+  --shimmer-via: 42 42 42;
+  --shimmer-to: 26 26 26;
+
+  --glass-bg: 31 41 55;
+  --glass-alpha: 0.8;
+  --glass-border-alpha: 0.1;
+
+  --tip-bg: 168 40 249;
+  --tip-bg-alpha: 0.2;
+  --tip-bg-alpha-hover: 0.3;
+  --tip-fg: 233 213 255;
+
+  --tooltip-bg: 3 7 18;
+  --tooltip-fg: 243 244 246;
+
+  --quote-fg: 156 163 175;
+
+  --backdrop-opacity: 0.2;
+
+  --prose-th-bg: 168 40 249;
+
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -12px rgb(0 0 0 / 0.6);
+  --shadow-card-hover: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 10px 10px -5px rgb(0 0 0 / 0.2);
+  --shadow-tooltip: 0 10px 28px rgb(2 6 23 / 0.6);
+
+  --code-bg: #0f172a;
+  --code-surface: #111827;
+  --code-border: #334155;
+  --code-text: #e5e7eb;
+  --code-muted: #94a3b8;
+  --code-line: #475569;
+  --code-keyword: #c084fc;
+  --code-built-in: #38bdf8;
+  --code-string: #fbbf24;
+  --code-number: #34d399;
+  --code-comment: #94a3b8;
+  --code-function: #60a5fa;
+  --code-class: #fca5a5;
+  --code-operator: #cbd5e1;
+  --code-punctuation: #94a3b8;
+  --code-attr: #f472b6;
+  --code-addition: #4ade80;
+  --code-deletion: #f87171;
 }

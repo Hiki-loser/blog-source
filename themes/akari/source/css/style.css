@@ -1,10 +1,18 @@
 /*
- * Akari Theme - Main Stylesheet
- * ACG Style Hexo Theme
+ * Akari Theme — hand-written stylesheet.
+ *
+ * Every colour here comes from a token in themes/akari/assets/tokens.css, which
+ * is compiled into /css/tailwind.css. There are no colour literals in this file
+ * by design: that is what lets light and dark mode be ~35 swapped values in one
+ * place instead of a `dark:` utility variant plus a parallel set of `.dark X`
+ * overrides that drift apart.
+ *
+ * Load order is tailwind.css then style.css, so the rules below win where they
+ * overlap.
  */
 
 /* ========================================
-   Base Styles
+   Base
    ======================================== */
 
 *,
@@ -18,17 +26,12 @@ html {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Helvetica', 'Arial', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: #f9fafb;
+  background: rgb(var(--surface-bg));
   background-size: cover;
-  background-attachment: fixed;
   background-position: center;
-}
-
-.dark body {
-  background: #111827;
 }
 
 /*
@@ -37,8 +40,12 @@ body {
  * The fallback is deliberately `none`, not an API URL: this rule used to carry
  * the random-image endpoint as its fallback, which meant CSS alone triggered a
  * cross-origin request on every page. The URL is now set on <html> by
- * js/backdrop.js after it has been resolved, cached and timeout-guarded — so
- * with JS unavailable, blocked, or the API down, this layer simply stays empty.
+ * js/backdrop.js, and only on the home page — see that file for why it cannot
+ * be cached and why scoping it was the only honest lever.
+ *
+ * `background-attachment: fixed` was removed: this element is already
+ * `position: fixed`, so it changed nothing visually while making mobile
+ * browsers repaint the full-size layer on every scroll frame.
  */
 body::before {
   content: '';
@@ -50,13 +57,42 @@ body::before {
   background-image: var(--background-image-api, none);
   background-size: cover;
   background-position: center;
-  background-attachment: fixed;
-  opacity: 0.1;
+  opacity: var(--backdrop-opacity);
   z-index: -1;
 }
 
-.dark body::before {
-  opacity: 0.2;
+/* ========================================
+   Focus & Skip Link
+   ======================================== */
+
+/*
+ * Previously the only :focus-visible rule in the whole theme was on
+ * `.prose .hover-tip`, so keyboard navigation relied entirely on the browser
+ * default outline while every interactive element had rich hover styling and
+ * no keyboard equivalent. This restores parity.
+ */
+:focus-visible {
+  outline: 2px solid rgb(var(--color-primary-500));
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Visible only once focused. Lets keyboard users jump past the header nav. */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  padding: 0.6rem 1rem;
+  background: rgb(var(--surface-card));
+  color: rgb(var(--text-strong));
+  border: 1px solid rgb(var(--border-strong));
+  border-radius: 0 0 var(--radius-md) 0;
+  font-weight: 600;
+}
+
+.skip-link:focus {
+  left: 0;
 }
 
 /* ========================================
@@ -73,50 +109,45 @@ body::before {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, #d675ff, #8b5cf6);
+  background: linear-gradient(to bottom, rgb(var(--scrollbar-from)), rgb(var(--scrollbar-to)));
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(to bottom, #c146ff, #7c3aed);
+  background: linear-gradient(to bottom, rgb(var(--scrollbar-from-hover)), rgb(var(--scrollbar-to-hover)));
 }
 
-/* Dark mode scrollbar */
-.dark ::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, #a828f9, #6d28d9);
+/* Firefox has no ::-webkit-scrollbar; give it the flat equivalent rather than
+   leaving it entirely unstyled as before. */
+@supports (scrollbar-width: thin) {
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--scrollbar-from)) transparent;
+  }
 }
 
 /* ========================================
-   Selection Colors
+   Selection
    ======================================== */
 
 ::selection {
-  background-color: rgba(214, 117, 255, 0.3);
+  background-color: rgb(var(--selection-base) / var(--selection-alpha));
   color: inherit;
 }
 
-.dark ::selection {
-  background-color: rgba(168, 40, 249, 0.4);
-}
-
 /* ========================================
-   Card Animations
+   Card / Hover Effects
    ======================================== */
 
 .card-hover {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all var(--duration-base) var(--ease-out-soft);
 }
 
 .card-hover:hover {
   transform: translateY(-4px);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-card-hover);
 }
 
-.dark .card-hover:hover {
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
-}
-
-/* Glow effect on hover */
 .glow-hover {
   position: relative;
 }
@@ -126,9 +157,9 @@ body::before {
   position: absolute;
   inset: -2px;
   border-radius: inherit;
-  background: linear-gradient(45deg, #d675ff, #8b5cf6, #d946ef);
+  background: linear-gradient(45deg, rgb(var(--color-primary-500)), rgb(var(--color-secondary-500)), rgb(var(--color-accent-500)));
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--duration-base) ease;
   z-index: -1;
   filter: blur(8px);
 }
@@ -137,25 +168,17 @@ body::before {
   opacity: 0.6;
 }
 
-/* ========================================
-   Gradient Text
-   ======================================== */
-
 .gradient-text {
-  background: linear-gradient(to right, #d675ff, #8b5cf6, #d946ef);
+  background: linear-gradient(to right, rgb(var(--brand-from)), rgb(var(--color-secondary-500)), rgb(var(--color-accent-500)));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
-/* ========================================
-   Button Styles
-   ======================================== */
-
 .btn-primary {
   position: relative;
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: all var(--duration-base) ease;
 }
 
 .btn-primary::before {
@@ -165,7 +188,7 @@ body::before {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.3), transparent);
   transition: left 0.5s ease;
 }
 
@@ -173,16 +196,12 @@ body::before {
   left: 100%;
 }
 
-/* ========================================
-   Image Hover Effects
-   ======================================== */
-
 .img-zoom-container {
   overflow: hidden;
 }
 
 .img-zoom {
-  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.5s var(--ease-out-soft);
 }
 
 .img-zoom-container:hover .img-zoom {
@@ -190,7 +209,7 @@ body::before {
 }
 
 /* ========================================
-   Loading Animation
+   Loading Shimmer
    ======================================== */
 
 @keyframes shimmer {
@@ -203,38 +222,41 @@ body::before {
 }
 
 .loading-shimmer {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background: linear-gradient(90deg, rgb(var(--shimmer-from)) 25%, rgb(var(--shimmer-via)) 50%, rgb(var(--shimmer-to)) 75%);
   background-size: 1000px 100%;
   animation: shimmer 2s infinite;
 }
 
-.dark .loading-shimmer {
-  background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
-}
-
 /* ========================================
-   Fade In Animation
+   Scroll Reveal
    ======================================== */
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/*
+ * Scroll reveal — MOVEMENT ONLY, deliberately never opacity.
+ *
+ * History of this rule, because it has now been wrong twice:
+ *
+ *   1. Originally: `.animate-on-scroll { opacity: 0 }`, with JS adding that
+ *      class to every heading, paragraph, pre and blockquote. Articles were
+ *      invisible until JS ran, and stayed invisible forever if it failed.
+ *   2. Then: default visible, JS opts elements in via `.reveal-armed`. Safer,
+ *      but still fatal when it went wrong — measured in a real browser, 40
+ *      elements received `animate-on-scroll` while ZERO received `visible`
+ *      (IntersectionObserver had not fired), which left the whole article at
+ *      opacity 0. Identical outcome, one indirection later.
+ *
+ * So the armed state no longer touches opacity at all. An armed element is
+ * offset slightly and slides into place; it is legible the entire time. There
+ * is now no state — JS disabled, JS broken, observer never firing — in which a
+ * decorative animation can make the article unreadable, because the article is
+ * never less than fully opaque.
+ */
+html.reveal-armed .animate-on-scroll {
+  transform: translateY(20px);
+  transition: transform 0.55s var(--ease-out-soft);
 }
 
-.animate-on-scroll {
-  opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
-}
-
-.animate-on-scroll.visible {
-  opacity: 1;
+html.reveal-armed .animate-on-scroll.visible {
   transform: translateY(0);
 }
 
@@ -242,28 +264,27 @@ body::before {
    Line Clamp Utility
    ======================================== */
 
-.line-clamp-1 {
+.line-clamp-1,
+.line-clamp-2,
+.line-clamp-3 {
   display: -webkit-box;
-  line-clamp: 1;
-  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.line-clamp-1 {
+  line-clamp: 1;
+  -webkit-line-clamp: 1;
 }
 
 .line-clamp-2 {
-  display: -webkit-box;
   line-clamp: 2;
   -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 .line-clamp-3 {
-  display: -webkit-box;
   line-clamp: 3;
   -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 /* ========================================
@@ -271,23 +292,19 @@ body::before {
    ======================================== */
 
 .glass {
-  background: rgba(255, 255, 255, 0.8);
+  background: rgb(var(--glass-bg) / var(--glass-alpha));
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.dark .glass {
-  background: rgba(31, 41, 55, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgb(255 255 255 / var(--glass-border-alpha));
 }
 
 /* ========================================
-   Typography Enhancements
+   Prose
    ======================================== */
 
 .prose {
   max-width: none;
+  color: rgb(var(--text-body));
 }
 
 .prose h1,
@@ -300,6 +317,7 @@ body::before {
   line-height: 1.3;
   margin-top: 1.5em;
   margin-bottom: 0.75em;
+  color: rgb(var(--text-strong));
 }
 
 .prose h1 {
@@ -319,30 +337,60 @@ body::before {
   margin-bottom: 1em;
 }
 
+/*
+ * CONTRAST FIX.
+ *
+ * This was #d675ff, measured at 2.68:1 against the white card it sits on —
+ * well below the 4.5:1 AA floor for body text, on every link in every article.
+ * #a828f9 is primary-700, a colour the theme already used for the dark
+ * scrollbar and the tooltip, so the link stays recognisably purple and does not
+ * read as "the same colour, darkened". Measured 4.84:1.
+ */
 .prose a {
-  color: #d675ff;
+  color: rgb(var(--link));
   text-decoration: none;
   border-bottom: 1px solid transparent;
-  transition: border-color 0.2s;
+  transition: border-color var(--duration-fast) ease;
 }
 
 .prose a:hover {
-  border-bottom-color: #d675ff;
-}
-
-.dark .prose a {
-  color: #c4b5fd;
+  border-bottom-color: rgb(var(--link-hover));
 }
 
 /*
- * The rules below were previously in an inline <style> block in post.ejs, which
- * restated most of the `.prose` rules above verbatim. Deleting that block was
- * only safe for the parts genuinely duplicated here — image, list and table
- * styling existed ONLY in the inline copy and would have silently regressed on
- * the table-heavy posts. They live here now, so there is one place to change
- * them and no per-page <style> to keep in sync.
+ * Heading anchor links injected by hexo-renderer-marked. They rendered as an
+ * empty, focusable <a> with only a title attribute — invisible, but a tab stop
+ * on every heading in every article. A script adds tabindex="-1" and
+ * aria-hidden so they leave the tab order; this makes the mouse affordance
+ * visible instead of being a mystery target.
  */
+.prose .headerlink {
+  margin-left: 0.3em;
+  opacity: 0;
+  text-decoration: none;
+  border-bottom: 0;
+  transition: opacity var(--duration-fast) ease;
+}
 
+.prose .headerlink::after {
+  content: '#';
+  color: rgb(var(--link));
+  font-weight: 400;
+}
+
+.prose h1:hover .headerlink,
+.prose h2:hover .headerlink,
+.prose h3:hover .headerlink,
+.prose h4:hover .headerlink,
+.prose h5:hover .headerlink,
+.prose h6:hover .headerlink {
+  opacity: 0.55;
+}
+
+/* Images, lists and tables. These lived only in an inline <style> block that
+   used to sit in post.ejs, restating most of this file verbatim. Deleting that
+   block without moving these across would have silently stripped table borders
+   from the table-heavy posts. */
 .prose img {
   max-width: 100%;
   height: auto;
@@ -369,23 +417,18 @@ body::before {
 
 .prose th,
 .prose td {
-  border: 1px solid #e5e7eb;
+  border: 1px solid rgb(var(--border-prose));
   padding: 0.75em;
   text-align: left;
 }
 
-.dark .prose th,
-.dark .prose td {
-  border-color: #374151;
-}
-
 .prose th {
-  background: rgba(214, 117, 255, 0.1);
+  background: rgb(var(--prose-th-bg) / 0.1);
   font-weight: 600;
 }
 
 /* ========================================
-   Inline Tooltip Hint
+   Inline Tooltip Hint (.hover-tip)
    ======================================== */
 
 .prose .hover-tip {
@@ -395,15 +438,15 @@ body::before {
   padding: 0 0.35em;
   margin: 0 0.06em;
   border-radius: 0.35rem;
-  color: #7c3aed;
-  background: rgba(214, 117, 255, 0.14);
+  color: rgb(var(--tip-fg));
+  background: rgb(var(--tip-bg) / var(--tip-bg-alpha));
   cursor: help;
-  transition: all 0.2s ease;
+  transition: all var(--duration-fast) ease;
 }
 
 .prose .hover-tip:hover,
 .prose .hover-tip:focus-visible {
-  background: rgba(214, 117, 255, 0.22);
+  background: rgb(var(--tip-bg) / var(--tip-bg-alpha-hover));
 }
 
 .prose .hover-tip::after {
@@ -417,18 +460,18 @@ body::before {
   width: max-content;
   padding: 0.5rem 0.65rem;
   border-radius: 0.55rem;
-  background: rgba(17, 24, 39, 0.96);
-  color: #f9fafb;
+  background: rgb(var(--tooltip-bg) / 0.96);
+  color: rgb(var(--tooltip-fg));
   font-size: 0.86rem;
   font-weight: 500;
   line-height: 1.45;
   text-align: left;
   white-space: normal;
-  box-shadow: 0 10px 28px rgba(2, 6, 23, 0.35);
+  box-shadow: var(--shadow-tooltip);
   z-index: 60;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition: opacity var(--duration-base) ease, transform var(--duration-base) ease;
 }
 
 .prose .hover-tip:hover::after,
@@ -437,17 +480,7 @@ body::before {
   transform: translateX(-50%) translateY(0);
 }
 
-.dark .prose .hover-tip {
-  color: #e9d5ff;
-  background: rgba(168, 40, 249, 0.2);
-}
-
-.dark .prose .hover-tip:hover,
-.dark .prose .hover-tip:focus-visible {
-  background: rgba(168, 40, 249, 0.3);
-}
-
-/* Global tooltip mode: render in body to avoid overflow clipping */
+/* Global tooltip mode: render into <body> to avoid overflow clipping. */
 body.has-global-tooltip .prose .hover-tip::after {
   content: none !important;
   display: none !important;
@@ -460,14 +493,14 @@ body.has-global-tooltip .prose .hover-tip::after {
   max-width: min(360px, calc(100vw - 20px));
   padding: 0.5rem 0.65rem;
   border-radius: 0.55rem;
-  background: rgba(17, 24, 39, 0.96);
-  color: #f9fafb;
+  background: rgb(var(--tooltip-bg) / 0.96);
+  color: rgb(var(--tooltip-fg));
   font-size: 0.86rem;
   font-weight: 500;
   line-height: 1.45;
   text-align: left;
   white-space: pre-wrap;
-  box-shadow: 0 10px 28px rgba(2, 6, 23, 0.35);
+  box-shadow: var(--shadow-tooltip);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -482,38 +515,28 @@ body.has-global-tooltip .prose .hover-tip::after {
   transform: translateY(0);
 }
 
-.dark #global-hover-tooltip {
-  background: rgba(3, 7, 18, 0.96);
-  color: #f3f4f6;
-}
-
 /* ========================================
-   Code Blocks
+   Code
    ======================================== */
 
 .prose code {
-  font-family: 'JetBrains Mono', 'Fira Code', 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 0.875em;
 }
 
+/*
+ * CONTRAST FIX. #a855f7 measured 3.53:1 against its own 12% primary tint.
+ * primary-800 gives 5.79:1; in dark mode primary-400 on a 15% tint gives 7.28:1.
+ */
 .prose p code,
 .prose li code,
 .prose td code,
 .prose th code {
   padding: 0.18em 0.45em;
   border-radius: 0.45rem;
-  background: rgba(214, 117, 255, 0.12);
-  color: #a855f7;
-  border: 1px solid rgba(214, 117, 255, 0.18);
-}
-
-.dark .prose p code,
-.dark .prose li code,
-.dark .prose td code,
-.dark .prose th code {
-  background: rgba(168, 40, 249, 0.18);
-  color: #e9d5ff;
-  border-color: rgba(168, 40, 249, 0.2);
+  background: rgb(var(--code-inline-base) / var(--code-inline-bg-alpha));
+  color: rgb(var(--code-inline-fg));
+  border: 1px solid rgb(var(--code-inline-base) / var(--code-inline-border-alpha));
 }
 
 .prose figure.highlight,
@@ -521,52 +544,15 @@ body.has-global-tooltip .prose .hover-tip::after {
   margin: 1.5em 0;
 }
 
+/* The --code-* variables now live in tokens.css (:root / .dark) instead of
+   being redeclared here and again under .dark. Same names, hoisted, so the quiz
+   page and any future component can use them too. */
 .prose figure.highlight {
-  --code-bg: #f8fafc;
-  --code-surface: #eef2f7;
-  --code-border: #d8dee9;
-  --code-text: #1f2937;
-  --code-muted: #64748b;
-  --code-line: #cbd5e1;
-  --code-keyword: #7c3aed;
-  --code-built-in: #0f766e;
-  --code-string: #b45309;
-  --code-number: #0ea5e9;
-  --code-comment: #64748b;
-  --code-function: #2563eb;
-  --code-class: #b42318;
-  --code-operator: #475569;
-  --code-punctuation: #64748b;
-  --code-attr: #d946ef;
-  --code-addition: #15803d;
-  --code-deletion: #dc2626;
   background: var(--code-bg);
   border: 1px solid var(--code-border);
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
-}
-
-.dark .prose figure.highlight {
-  --code-bg: #0f172a;
-  --code-surface: #111827;
-  --code-border: #334155;
-  --code-text: #e5e7eb;
-  --code-muted: #94a3b8;
-  --code-line: #475569;
-  --code-keyword: #c084fc;
-  --code-built-in: #38bdf8;
-  --code-string: #fbbf24;
-  --code-number: #34d399;
-  --code-comment: #94a3b8;
-  --code-function: #60a5fa;
-  --code-class: #fca5a5;
-  --code-operator: #cbd5e1;
-  --code-punctuation: #94a3b8;
-  --code-attr: #f472b6;
-  --code-addition: #4ade80;
-  --code-deletion: #f87171;
-  box-shadow: 0 16px 36px rgba(2, 6, 23, 0.45);
+  box-shadow: var(--shadow-code);
 }
 
 .prose figure.highlight table {
@@ -590,13 +576,26 @@ body.has-global-tooltip .prose .hover-tip::after {
   text-align: right;
 }
 
-.prose figure.highlight td.gutter pre {
+/*
+ * The gutter and the code column must use IDENTICAL font-size, line-height and
+ * vertical padding, or the line numbers stop lining up with the lines. They were
+ * 1rem / 0.8, which also made code blocks visibly larger than the 0.875em inline
+ * code around them.
+ */
+.prose figure.highlight td.gutter pre,
+.prose figure.highlight td.code pre {
   margin: 0;
-  padding: 0.65rem 0.8rem;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.prose figure.highlight td.gutter pre {
+  padding-left: 0.8rem;
+  padding-right: 0.8rem;
   min-width: 3.5rem;
-  font-family: 'JetBrains Mono', 'Fira Code', 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
-  font-size: 1rem;
-  line-height: 0.8;
 }
 
 .prose figure.highlight td.gutter .line {
@@ -609,14 +608,11 @@ body.has-global-tooltip .prose .hover-tip::after {
 }
 
 .prose figure.highlight td.code pre {
-  margin: 0;
-  padding: 0.65rem 1rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
   overflow-x: auto;
   background: transparent;
   color: var(--code-text);
-  font-family: 'JetBrains Mono', 'Fira Code', 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
-  font-size: 1rem;
-  line-height: 0.8;
   tab-size: 2;
 }
 
@@ -684,7 +680,6 @@ body.has-global-tooltip .prose .hover-tip::after {
 .prose figure.highlight .property,
 .prose figure.highlight .tag,
 .prose figure.highlight .name,
-.prose figure.highlight .attr,
 .prose figure.highlight .variable {
   color: var(--code-attr);
 }
@@ -706,11 +701,7 @@ body.has-global-tooltip .prose .hover-tip::after {
 }
 
 .prose figure.highlight .line:hover {
-  background: rgba(214, 117, 255, 0.05);
-}
-
-.dark .prose figure.highlight .line:hover {
-  background: rgba(168, 40, 249, 0.08);
+  background: rgb(var(--code-inline-base) / var(--code-line-hover-alpha));
 }
 
 /* ========================================
@@ -718,19 +709,107 @@ body.has-global-tooltip .prose .hover-tip::after {
    ======================================== */
 
 blockquote {
-  border-left: 4px solid #d675ff;
+  border-left: 4px solid rgb(var(--quote-border));
   padding-left: 1em;
   margin: 1em 0;
   font-style: italic;
-  color: #6b7280;
-}
-
-.dark blockquote {
-  color: #9ca3af;
+  color: rgb(var(--quote-fg));
 }
 
 /* ========================================
-   Mobile Responsive
+   Reading Progress (post pages)
+   ======================================== */
+
+#reading-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: var(--reading-progress-h);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  background: linear-gradient(to right, rgb(var(--brand-from)), rgb(var(--color-secondary-500)));
+  z-index: 60;
+  pointer-events: none;
+}
+
+/* ========================================
+   Back To Top
+   ======================================== */
+
+#back-to-top {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 50;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--radius-pill);
+  background: rgb(var(--surface-card) / 0.9);
+  color: rgb(var(--text-strong));
+  border: 1px solid rgb(var(--border-subtle));
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px);
+  transition: opacity var(--duration-base) var(--ease-out-soft),
+    transform var(--duration-base) var(--ease-out-soft),
+    visibility var(--duration-base);
+  cursor: pointer;
+}
+
+#back-to-top.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+#back-to-top:hover {
+  color: rgb(var(--link));
+}
+
+/* Applied while the mobile menu is open, so the page behind it cannot scroll. */
+body.nav-open {
+  overflow: hidden;
+}
+
+/* ========================================
+   Journal (reduced motion)
+   ======================================== */
+
+/*
+ * The theme animates heavily — fade-ins, hover transforms, a scroll-reveal, a
+ * smooth-scrolling html. None of it had an escape hatch. The JS-driven effects
+ * (reveal, reading progress) check the same query themselves.
+ */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Also drop the movement, so nothing shifts under a reader who asked for
+     reduced motion. */
+  html.reveal-armed .animate-on-scroll {
+    transform: none;
+  }
+}
+
+/* ========================================
+   Mobile
    ======================================== */
 
 @media (max-width: 640px) {
@@ -749,7 +828,7 @@ blockquote {
 }
 
 /* ========================================
-   Print Styles
+   Print
    ======================================== */
 
 @media print {
@@ -758,7 +837,9 @@ blockquote {
     color: black;
   }
 
-  .no-print {
+  .no-print,
+  #back-to-top,
+  #reading-progress {
     display: none !important;
   }
 }

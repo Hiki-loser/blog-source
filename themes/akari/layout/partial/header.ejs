@@ -3,6 +3,7 @@ const akari = akari_config();
 const siteTitle = akari.site?.title || config.title || 'Hexo';
 const navItems = Array.isArray(akari.nav) ? akari.nav : [];
 const uiActions = akari.ui?.actions || {};
+const searchEnabled = akari.search?.enable !== false;
 %>
 
 <header class="sticky top-0 z-50 backdrop-blur-md bg-white/90 dark:bg-gray-900/90 border-b border-gray-200 dark:border-gray-800 shadow-sm">
@@ -11,7 +12,7 @@ const uiActions = akari.ui?.actions || {};
       <!-- Logo / Site Title -->
       <a href="<%- url_for('/') %>" class="flex items-center gap-3 group">
         <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-secondary-600 flex items-center justify-center transform group-hover:scale-105 transition-transform duration-300 shadow-lg shadow-primary-500/25">
-          <span class="text-white font-bold text-lg"><%= siteTitle.charAt(0).toUpperCase() %></span>
+          <span class="text-white font-bold text-lg" aria-hidden="true"><%= siteTitle.charAt(0).toUpperCase() %></span>
         </div>
         <span class="text-xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent hidden sm:block">
           <%= siteTitle %>
@@ -19,7 +20,7 @@ const uiActions = akari.ui?.actions || {};
       </a>
 
       <!-- Navigation -->
-      <nav class="hidden md:flex items-center gap-1">
+      <nav class="hidden md:flex items-center gap-1" aria-label="主导航">
         <% navItems.forEach(function(item) { %>
           <a
             href="<%- item.url || url_for(item.path || '/') %>"
@@ -27,51 +28,71 @@ const uiActions = akari.ui?.actions || {};
             class="px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-200 font-medium relative group"
           >
             <%= item.name %>
-            <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary-500 to-secondary-600 transition-all duration-300 group-hover:w-full"></span>
+            <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-primary-500 to-secondary-600 transition-all duration-300 group-hover:w-full" aria-hidden="true"></span>
           </a>
         <% }); %>
       </nav>
 
       <!-- Right Actions -->
       <div class="flex items-center gap-2">
-        <!-- Search Button (Optional) -->
-        <button class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200" aria-label="<%= uiActions.search || '搜索' %>">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-          </svg>
-        </button>
+        <%#
+          The search button used to have an aria-label but no handler and no
+          plugin behind it — a control that looked and announced itself as
+          interactive and did nothing. It now opens the search dialog
+          (js/search.js); `hidden` keeps it out of the way when that is off.
+        %>
+        <% if (searchEnabled) { %>
+          <button
+            type="button"
+            id="search-trigger"
+            class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200"
+            aria-label="<%= uiActions.search || '搜索' %>"
+            aria-haspopup="dialog"
+            aria-controls="search-dialog"
+            aria-expanded="false"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </button>
+        <% } %>
 
         <!-- Dark Mode Toggle -->
         <button
+          type="button"
           id="dark-mode-toggle"
           class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 relative group"
           aria-label="<%= uiActions.toggle_dark_mode || '切换深色模式' %>"
+          aria-pressed="false"
         >
-          <!-- Sun Icon -->
-          <svg class="w-5 h-5 hidden dark:block text-yellow-500 transition-transform duration-300 group-hover:rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <!-- aria-pressed is kept in sync with the .dark class by js/ui.js -->
+          <svg class="w-5 h-5 hidden dark:block text-yellow-500 transition-transform duration-300 group-hover:rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
           </svg>
-          <!-- Moon Icon -->
-          <svg class="w-5 h-5 dark:hidden text-gray-700 transition-transform duration-300 group-hover:rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-5 h-5 dark:hidden text-gray-700 transition-transform duration-300 group-hover:rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-6.646z"></path>
           </svg>
         </button>
 
         <!-- Mobile Menu Button -->
         <button
+          type="button"
           id="mobile-menu-button"
           class="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200"
           aria-label="<%= uiActions.menu || '菜单' %>"
+          aria-controls="mobile-menu"
+          aria-expanded="false"
         >
-          <svg class="w-6 h-6 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-6 h-6 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
           </svg>
         </button>
       </div>
     </div>
 
-    <!-- Mobile Menu -->
-    <div id="mobile-menu" class="md:hidden hidden pb-4 space-y-2 animate-fade-in">
+    <!-- Mobile Menu. aria-expanded/aria-controls live on the button above and
+         are maintained by js/ui.js, which also locks page scroll while open. -->
+    <nav id="mobile-menu" class="md:hidden hidden pb-4 space-y-2 animate-fade-in" aria-label="移动导航">
       <% navItems.forEach(function(item) { %>
         <a
           href="<%- item.url || url_for(item.path || '/') %>"
@@ -81,14 +102,6 @@ const uiActions = akari.ui?.actions || {};
           <%= item.name %>
         </a>
       <% }); %>
-    </div>
+    </nav>
   </div>
 </header>
-
-<script>
-  // Mobile menu toggle
-  document.getElementById('mobile-menu-button')?.addEventListener('click', function() {
-    const menu = document.getElementById('mobile-menu');
-    menu?.classList.toggle('hidden');
-  });
-</script>

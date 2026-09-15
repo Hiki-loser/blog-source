@@ -88,6 +88,17 @@ hexo.extend.helper.register('akari_config', function () {
         repo: ''
       }
     },
+    // Site-wide search. The index itself is produced by hexo-generator-searchdb
+    // (configured under `search:` in the ROOT _config.yml — that plugin reads
+    // its own top-level key, not this theme namespace). This block only
+    // controls the front-end dialog and where it fetches from.
+    search: {
+      enable: true,
+      // Resolved through url_for() so a non-root `root` config keeps working.
+      path: '/search.json',
+      // Fetched on first dialog open, never on page load.
+      max_results: 20
+    },
     footer: {
       since: currentYear,
       additional: ''
@@ -170,7 +181,13 @@ hexo.extend.helper.register('akari_config', function () {
         toggle_dark_mode: '切换深色模式',
         menu: '菜单',
         search: '搜索',
-        toggle_music: '切换音乐播放器'
+        toggle_music: '切换音乐播放器',
+        skip_to_content: '跳到主要内容',
+        back_to_top: '回到顶部',
+        search_placeholder: '搜索文章…',
+        search_empty: '没有找到匹配的文章',
+        search_hint: '输入关键词，Esc 关闭',
+        search_loading: '正在加载索引…'
       },
       daily_image: {
         fallback_text: 'ACG Daily Image'

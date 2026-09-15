@@ -16,7 +16,11 @@ const tags = akari_sort_terms(p.tags, 'name');
   <div class="flex flex-col sm:flex-row gap-0 sm:gap-4 p-4 sm:p-5">
     <% if (coverImage) { %>
       <div class="sm:w-48 h-40 sm:h-32 flex-shrink-0 overflow-hidden rounded-xl">
-        <img src="<%= coverImage %>" alt="<%= p.title %>" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500" />
+        <%# alt="" because the card's own heading already announces the title —
+            a non-empty alt here made screen readers read it twice per card, on
+            every listing page. Lazy is correct for a card: these are below the
+            fold and there is one per post per page. %>
+        <img src="<%= coverImage %>" alt="" loading="lazy" decoding="async" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500" />
       </div>
     <% } %>
 
