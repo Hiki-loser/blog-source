@@ -4,38 +4,58 @@ on:
   push:
     branches:
       - main
+  # Lets you re-run a deploy from the Actions tab without pushing a commit.
+  workflow_dispatch:
+
+# The job pushes to an external repo using a PAT (secrets.GH_TOKEN),
+# so the default GITHUB_TOKEN needs no write access here.
+permissions:
+  contents: read
+
+# A newer push supersedes an in-flight deploy.
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout source
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
 
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: package-lock.json
 
+      # NOTE: deliberately `npm ci` against the committed lockfile, and
+      # deliberately NOT `rm -rf node_modules package-lock.json && npm install`.
+      # Re-resolving every dependency on every deploy means any upstream publish
+      # silently changes the deployed site with no way to roll back.
+      #
+      # Do NOT set NODE_ENV=production anywhere in this workflow: it makes
+      # `npm ci` skip devDependencies, and the CSS build (postcss) lives there.
       - name: Install dependencies
-        run: |
-          rm -rf node_modules package-lock.json
-          npm install
+        run: npm ci
 
       - name: Generate static files
         run: npx hexo clean && npx hexo generate
 
       - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           personal_token: ${{ secrets.GH_TOKEN }}
           external_repository: Hiki-loser/Hiki-loser.github.io
           publish_branch: main
           publish_dir: ./public
 
-          # 👇关键配置（必须加）
+          # Publishing to an external repo's Pages branch: the orphan
+          # force-push is what guarantees deletions propagate.
           force_orphan: true
 
-          # 👇确保彻底覆盖
           commit_message: "deploy: rebuild site from source"

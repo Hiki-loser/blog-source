@@ -1,7 +1,22 @@
 version: 2
 updates:
-- package-ecosystem: npm
-  directory: "/"
-  schedule:
-    interval: daily
-  open-pull-requests-limit: 20
+  # Actions were pinned at @v3 for years because this ecosystem was missing
+  # from this file. Without it, major-version staleness is invisible.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+
+  # Monthly + grouped on purpose: Hexo plugins occasionally publish breaking
+  # majors, and a weekly stream of them just mixes noise into content commits.
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+    groups:
+      npm-minor-patch:
+        update-types:
+          - minor
+          - patch
