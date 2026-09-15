@@ -5,8 +5,11 @@ const p = typeof post !== 'undefined' ? post : (typeof page !== 'undefined' ? pa
 if (!p) return;
 const postUrl = p.permalink || url_for(p.path);
 const coverImage = p.cover || p.thumbnail || '';
-const categories = p.categories ? (typeof p.categories.toArray === 'function' ? p.categories.toArray() : []) : [];
-const tags = p.tags ? (typeof p.tags.toArray === 'function' ? p.tags.toArray() : []) : [];
+// Sorted, not raw: a post's categories/tags have no stable order across builds
+// (see akari_sort_terms in scripts/akari-config.js). Which one lands in
+// categories[0] below was previously random from build to build.
+const categories = akari_sort_terms(p.categories, 'name');
+const tags = akari_sort_terms(p.tags, 'name');
 %>
 
 <article class="group bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-xl hover:shadow-primary-500/10 transition-all duration-300 overflow-hidden border border-gray-100 dark:border-gray-700">

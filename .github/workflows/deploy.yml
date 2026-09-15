@@ -43,8 +43,25 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # The compiled stylesheet is committed so that deploying never depends on
+      # a build step succeeding. That makes it possible to commit a source change
+      # and forget to rebuild, so verify the artifact is current. Tailwind v3
+      # output is deterministic for identical input, and .gitattributes
+      # normalises to LF, so this is a byte-exact comparison.
+      - name: Build CSS
+        run: npm run build:css
+
+      - name: Verify generated CSS is committed
+        run: git diff --exit-code -- themes/akari/source/css/tailwind.css
+
       - name: Generate static files
         run: npx hexo clean && npx hexo generate
+
+      # Moves Tailwind off the CDN (which generated utilities from the live DOM,
+      # so nothing could be missed) onto a local build driven by `content` globs,
+      # which can silently purge a class that lives outside those globs.
+      - name: Verify no Tailwind class was purged
+        run: node tools/verify-class-coverage.js public
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4

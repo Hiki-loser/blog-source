@@ -216,6 +216,55 @@ hexo.extend.helper.register('akari_is_intro_post', function (post) {
   return fileName.endsWith(suffix) || slug.endsWith(suffix) || pathSegment.endsWith(suffix);
 });
 
+/**
+ * Deterministically order a Hexo term collection (site.tags, site.categories).
+ *
+ * Why this exists: Hexo reads post source files in parallel, so terms are
+ * created in whatever order those reads happen to complete. Iterating the
+ * collection directly therefore yields a DIFFERENT order on every clean build —
+ * running `hexo clean && hexo generate` four times produced four different tag
+ * clouds. For a static site that means the sidebar and tag cloud reshuffle on
+ * every deploy, and the generated HTML can never be meaningfully diffed (which
+ * is exactly the safety net used to verify template refactors).
+ *
+ * Default order is post count descending (most-used terms lead — right for a
+ * tag cloud or the category sidebar), then by name for a total order. Pass
+ * 'name' as the second argument for a pure alphabetical order, which is what
+ * an individual article's own tag/category chips want.
+ *
+ * The name comparison is deliberately a plain code-unit comparison rather than
+ * localeCompare: it has to be byte-identical on every machine regardless of
+ * which ICU data the local Node was built with.
+ */
+hexo.extend.helper.register('akari_sort_terms', function (collection, mode) {
+  let list = [];
+
+  if (Array.isArray(collection)) {
+    list = collection.slice();
+  } else if (collection && typeof collection.toArray === 'function') {
+    list = collection.toArray();
+  } else if (collection && typeof collection.forEach === 'function') {
+    collection.forEach((item) => list.push(item));
+  }
+
+  const byNameOnly = mode === 'name';
+
+  return list.slice().sort((a, b) => {
+    if (!byNameOnly) {
+      const byCount = (b.length || 0) - (a.length || 0);
+      if (byCount !== 0) {
+        return byCount;
+      }
+    }
+
+    const nameA = String(a.name || '');
+    const nameB = String(b.name || '');
+    if (nameA < nameB) return -1;
+    if (nameA > nameB) return 1;
+    return 0;
+  });
+});
+
 hexo.extend.helper.register('akari_category_cards', function () {
   const siteConfig = hexo.config || {};
   const akari = siteConfig.akari || {};

@@ -2,7 +2,7 @@
 const akari = akari_config();
 const siteTitle = akari.site?.title || config.title || 'Hexo';
 const siteDescription = page.excerpt || page.description || (page.content ? page.content.substring(0, 200).replace(/<[^>]*>/g, '') : '');
-const siteKeywords = page.tags ? page.tags.map(function(t) { return t.name; }).join(',') : (Array.isArray(akari.site?.keywords) ? akari.site.keywords.join(',') : '');
+const siteKeywords = page.tags ? akari_sort_terms(page.tags, 'name').map(function(t) { return t.name; }).join(',') : (Array.isArray(akari.site?.keywords) ? akari.site.keywords.join(',') : '');
 const commentsEnabled = akari.comment?.enable && page.comments !== false;
 const postText = akari.ui?.post || {};
 const locale = akari.site?.language || config.language || 'zh-CN';
@@ -52,22 +52,11 @@ const categoryPostsWithoutCurrent = categoryPosts.filter(function (post) {
   <meta name="keywords" content="<%= siteKeywords %>">
   <title><%= page.title %> | <%= siteTitle %></title>
   <link rel="icon" type="image/svg+xml" href="<%- url_for('/img/favicon.svg') %>">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            primary: { 50: '#fef7ff', 100: '#faeeff', 200: '#f5dfff', 300: '#edc6ff', 400: '#e2a2ff', 500: '#d675ff', 600: '#c146ff', 700: '#a828f9', 800: '#8d1fd0', 900: '#751eaa', 950: '#4f0d7a' },
-            secondary: { 50: '#f5f3ff', 100: '#ede9fe', 200: '#ddd6fe', 300: '#c4b5fd', 400: '#a78bfa', 500: '#8b5cf6', 600: '#7c3aed', 700: '#6d28d9', 800: '#5b21b6', 900: '#4c1d95' },
-            accent: { 50: '#fdf4ff', 100: '#fae8ff', 200: '#f5d0fe', 300: '#f0abfc', 400: '#e879f9', 500: '#d946ef', 600: '#c026d3', 700: '#a21caf', 800: '#86198f', 900: '#701a75' }
-          },
-          fontFamily: { sans: ['-apple-system', 'BlinkMacSystemFont', 'Helvetica Neue', 'Helvetica', 'Arial', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'sans-serif'] }
-        }
-      }
-    }
-  </script>
+  <%# Tailwind, compiled locally by `npm run build:css` from tailwind.config.js
+      and themes/akari/assets/tokens.css. This replaced a render-blocking script
+      from the Tailwind CDN, which is unreachable from mainland China and
+      compiled CSS in the browser at runtime. Do not reintroduce it. %>
+  <link rel="stylesheet" href="<%- url_for('/css/tailwind.css') %>">
   <link rel="stylesheet" href="<%- url_for('/css/style.css') %>">
   <style>
     .prose { line-height: 1.8; }
@@ -119,7 +108,7 @@ const categoryPostsWithoutCurrent = categoryPosts.filter(function (post) {
             <% if (page.categories && page.categories.length > 0) { %>
               <div class="flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
-                <% page.categories.forEach(function(cat) { %>
+                <% akari_sort_terms(page.categories, 'name').forEach(function(cat) { %>
                   <a href="<%- url_for(cat.path) %>" class="px-2.5 py-1 rounded-lg bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 hover:bg-primary-500 hover:text-white transition-colors"><%= cat.name %></a>
                 <% }); %>
               </div>
@@ -128,7 +117,7 @@ const categoryPostsWithoutCurrent = categoryPosts.filter(function (post) {
             <% if (page.tags && page.tags.length > 0) { %>
               <div class="flex items-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
-                <% page.tags.forEach(function(tag) { %>
+                <% akari_sort_terms(page.tags, 'name').forEach(function(tag) { %>
                   <a href="<%- url_for(tag.path) %>" class="px-2.5 py-1 rounded-lg bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-400 hover:bg-secondary-500 hover:text-white transition-colors"><%= tag.name %></a>
                 <% }); %>
               </div>

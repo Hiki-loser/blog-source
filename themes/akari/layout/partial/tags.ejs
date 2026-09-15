@@ -1,7 +1,9 @@
 <%
 const akari = akari_config();
 const sidebarText = akari.ui?.sidebar || {};
-const tags = site.tags || [];
+// Sorted, not raw: site.tags has no stable order across builds (see
+// akari_sort_terms in scripts/akari-config.js).
+const tags = akari_sort_terms(site.tags);
 const hasTags = tags && tags.length > 0;
 %>
 

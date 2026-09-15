@@ -1,0 +1,15 @@
+/*
+ * Akari — Tailwind entry point (BUILD INPUT, not shipped directly)
+ *
+ * Compiled to themes/akari/source/css/tailwind.css by `npm run build:css`.
+ * That output is committed, and Hexo copies it to /css/tailwind.css.
+ *
+ * postcss-import inlines ./tokens.css here at build time, so the browser still
+ * makes exactly one stylesheet request for the compiled result.
+ */
+
+@import "./tokens.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

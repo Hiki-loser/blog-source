@@ -1,7 +1,9 @@
 <%
 const akari = akari_config();
 const sidebarText = akari.ui?.sidebar || {};
-const categories = site.categories || [];
+// Sorted, not raw: site.categories has no stable order across builds (see
+// akari_sort_terms in scripts/akari-config.js).
+const categories = akari_sort_terms(site.categories);
 const hasCategories = categories && categories.length > 0;
 const categoriesData = akari.categories || {};
 
