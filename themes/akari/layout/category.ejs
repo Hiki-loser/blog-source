@@ -1,9 +1,15 @@
+<%#
+  Dual-mode: the category index (/categories/, via source/categories/index.md
+  front-matter is_category_index) renders the cover-card grid from
+  akari_category_cards(); an individual category renders its posts.
+  Rendered inside the <main> of layout.ejs.
+%>
 <%
 const akari = akari_config();
-const siteTitle = akari.site?.title || config.title || 'Hexo';
 const categoryText = akari.ui?.category || {};
 const locale = akari.site?.language || config.language || 'zh-CN';
 const categoryDataConfig = akari.categories || {};
+
 function toPostArray(collection) {
   if (!collection) return [];
   if (Array.isArray(collection)) return collection.slice();
@@ -11,23 +17,29 @@ function toPostArray(collection) {
 
   const arr = [];
   if (typeof collection.forEach === 'function') {
-    collection.forEach(function (item) {
-      arr.push(item);
-    });
+    collection.forEach(function (item) { arr.push(item); });
   }
   return arr;
 }
+
+/* Newest first, with a path tie-break for a total order (see archive.ejs). */
+function byDateDesc(a, b) {
+  const byDate = new Date(b.date) - new Date(a.date);
+  if (byDate !== 0) return byDate;
+  const pathA = String(a.path || '');
+  const pathB = String(b.path || '');
+  return pathA < pathB ? -1 : (pathA > pathB ? 1 : 0);
+}
+
 const isCategoryIndex = page?.is_category_index || !page?.posts;
 const categoryCardsFromHelper = isCategoryIndex ? akari_category_cards() : [];
 const categoryCardsFallback = isCategoryIndex
-  ? toPostArray(site.categories)
+  ? akari_sort_terms(site.categories)
       .map(function (category) {
         const categoryPosts = toPostArray(category.posts);
         const introPosts = categoryPosts.filter(function (post) {
           return akari_is_intro_post(post);
-        }).sort(function (a, b) {
-          return new Date(b.date) - new Date(a.date);
-        });
+        }).sort(byDateDesc);
 
         const parent = category.parent || null;
         const topKey = String((parent && parent.name) || category.name || '');
@@ -56,123 +68,92 @@ const categoryCards = categoryCardsFromHelper && categoryCardsFromHelper.length 
   ? categoryCardsFromHelper
   : categoryCardsFallback;
 const categoryPosts = !isCategoryIndex && page?.posts
-  ? toPostArray(page.posts).sort(function (a, b) {
-      return new Date(b.date) - new Date(a.date);
-    })
+  ? toPostArray(page.posts).sort(byDateDesc)
   : [];
 const currentCategoryName = String(page?.title || page?.category || categoryText.title || '分类');
 %>
 
-<!DOCTYPE html>
-<html lang="<%- typeof language !== 'undefined' ? language : 'zh-CN' %>">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title><%= isCategoryIndex ? (categoryText.page_title || '分类') : currentCategoryName %> | <%= siteTitle %></title>
-  <link rel="icon" type="image/svg+xml" href="<%- url_for('/img/favicon.svg') %>">
-  <%# Tailwind, compiled locally by `npm run build:css` from tailwind.config.js
-      and themes/akari/assets/tokens.css. This replaced a render-blocking script
-      from the Tailwind CDN, which is unreachable from mainland China and
-      compiled CSS in the browser at runtime. Do not reintroduce it. %>
-  <link rel="stylesheet" href="<%- url_for('/css/tailwind.css') %>">
-  <link rel="stylesheet" href="<%- url_for('/css/style.css') %>">
-</head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300" style="--background-image-api: url('<%= akari.home?.background_image?.api || 'https://uapis.cn/api/v1/random/image?category=landscape' %>');">
-
-<div class="min-h-screen">
-  <%- partial('partial/header') %>
-
-  <main class="container mx-auto px-4 py-8 max-w-4xl">
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold mb-2 bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
-        <%= isCategoryIndex ? (categoryText.title || '分类') : currentCategoryName %>
-      </h1>
-      <p class="text-gray-600 dark:text-gray-400">
-        <%= isCategoryIndex ? (categoryText.subtitle || '探索不同主题的文章') : (categoryText.posts_title || '分类文章') %>
-      </p>
-    </div>
-
-    <% if (isCategoryIndex) { %>
-      <section class="mb-6 rounded-2xl p-5 bg-white/80 dark:bg-gray-800/80 border border-gray-100 dark:border-gray-700 shadow-sm">
-        <h2 class="text-lg font-bold text-gray-900 dark:text-white"><%= categoryText.cover_section_title || '分类导览' %></h2>
-        <p class="text-sm mt-1 text-gray-600 dark:text-gray-400"><%= categoryText.cover_section_subtitle || '仅展示各分类的介绍文章，点击进入查看该分类全部内容' %></p>
-      </section>
-
-      <% if (categoryCards && categoryCards.length > 0) { %>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <% categoryCards.forEach(function(card) { %>
-            <% const introPost = card.introPost; %>
-            <a href="<%- url_for(card.path) %>" class="group relative overflow-hidden rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-700 hover:shadow-xl hover:shadow-primary-500/10 transition-all duration-300 p-5">
-              <div class="absolute -right-10 -top-10 w-32 h-32 rounded-full bg-gradient-to-br from-primary-500/15 to-secondary-500/15 blur-2xl group-hover:scale-125 transition-transform duration-500"></div>
-
-              <div class="relative space-y-3">
-                <div class="flex items-center justify-between gap-3">
-                  <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300">
-                    <%= card.groupName %>
-                  </span>
-                  <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
-                    <%= card.postCount %> <%= categoryText.post_count_suffix || '篇' %>
-                  </span>
-                </div>
-
-                <h3 class="text-xl font-bold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors"><%= card.name %></h3>
-
-                <% if (card.description) { %>
-                  <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2"><%= card.description %></p>
-                <% } %>
-
-                <div class="rounded-xl bg-gray-50 dark:bg-gray-900/40 border border-gray-100 dark:border-gray-700 p-3">
-                  <p class="text-xs font-medium text-primary-600 dark:text-primary-400 mb-1"><%= categoryText.intro_badge || '封面文章' %></p>
-                  <p class="font-semibold text-gray-900 dark:text-white line-clamp-1"><%= introPost.title %></p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-1"><%= new Date(introPost.date).toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' }) %></p>
-                </div>
-
-                <div class="inline-flex items-center gap-1 text-sm text-primary-600 dark:text-primary-400 font-medium group-hover:translate-x-1 transition-transform">
-                  <%= categoryText.enter_category || '进入分类' %>
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                </div>
-              </div>
-            </a>
-          <% }); %>
-        </div>
-      <% } else { %>
-        <div class="rounded-2xl border border-dashed border-gray-300 dark:border-gray-600 p-8 text-center text-gray-600 dark:text-gray-300 bg-white/70 dark:bg-gray-800/70">
-          <%= categoryText.empty_hint || '暂无可展示的分类封面文章，请为分类添加后缀为 -intro 的文章。' %>
-        </div>
-      <% } %>
-    <% } else { %>
-      <div class="mb-6">
-        <a href="<%- url_for('/categories/') %>" class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-          <%= categoryText.back_to_categories || '返回分类页' %>
-        </a>
-      </div>
-
-      <% if (categoryPosts && categoryPosts.length > 0) { %>
-        <div class="space-y-4">
-          <% categoryPosts.forEach(function(post) { %>
-            <div class="relative">
-              <% if (akari_is_intro_post(post)) { %>
-                <span class="absolute -top-2 left-4 z-10 px-2 py-0.5 rounded-full text-xs font-bold bg-gradient-to-r from-primary-500 to-secondary-500 text-white">
-                  <%= categoryText.intro_badge || '封面文章' %>
-                </span>
-              <% } %>
-              <%- partial('partial/post-card', { post: post }) %>
-            </div>
-          <% }); %>
-        </div>
-      <% } else { %>
-        <div class="rounded-2xl border border-dashed border-gray-300 dark:border-gray-600 p-8 text-center text-gray-600 dark:text-gray-300 bg-white/70 dark:bg-gray-800/70">
-          <%= categoryText.empty_posts || '该分类下暂无文章。' %>
-        </div>
-      <% } %>
-    <% } %>
-  </main>
-
-  <%- partial('partial/footer') %>
+<div class="mb-8">
+  <h1 class="text-3xl font-bold mb-2 bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
+    <%= isCategoryIndex ? (categoryText.title || '分类') : currentCategoryName %>
+  </h1>
+  <p class="text-gray-600 dark:text-gray-400">
+    <%= isCategoryIndex ? (categoryText.subtitle || '探索不同主题的文章') : (categoryText.posts_title || '分类文章') %>
+  </p>
 </div>
 
-<script src="<%- url_for('/js/dark-mode.js') %>"></script>
-</body>
-</html>
+<% if (isCategoryIndex) { %>
+  <section class="mb-6 rounded-2xl p-5 bg-white/80 dark:bg-gray-800/80 border border-gray-100 dark:border-gray-700 shadow-sm">
+    <h2 class="text-lg font-bold text-gray-900 dark:text-white"><%= categoryText.cover_section_title || '分类导览' %></h2>
+    <p class="text-sm mt-1 text-gray-600 dark:text-gray-400"><%= categoryText.cover_section_subtitle || '仅展示各分类的介绍文章，点击进入查看该分类全部内容' %></p>
+  </section>
+
+  <% if (categoryCards && categoryCards.length > 0) { %>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <% categoryCards.forEach(function(card) { %>
+        <% const introPost = card.introPost; %>
+        <a href="<%- url_for(card.path) %>" class="group relative overflow-hidden rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-700 hover:shadow-xl hover:shadow-primary-500/10 transition-all duration-300 p-5">
+          <div class="absolute -right-10 -top-10 w-32 h-32 rounded-full bg-gradient-to-br from-primary-500/15 to-secondary-500/15 blur-2xl group-hover:scale-125 transition-transform duration-500"></div>
+
+          <div class="relative space-y-3">
+            <div class="flex items-center justify-between gap-3">
+              <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300">
+                <%= card.groupName %>
+              </span>
+              <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                <%= card.postCount %> <%= categoryText.post_count_suffix || '篇' %>
+              </span>
+            </div>
+
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors"><%= card.name %></h3>
+
+            <% if (card.description) { %>
+              <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2"><%= card.description %></p>
+            <% } %>
+
+            <div class="rounded-xl bg-gray-50 dark:bg-gray-900/40 border border-gray-100 dark:border-gray-700 p-3">
+              <p class="text-xs font-medium text-primary-600 dark:text-primary-400 mb-1"><%= categoryText.intro_badge || '封面文章' %></p>
+              <p class="font-semibold text-gray-900 dark:text-white line-clamp-1"><%= introPost.title %></p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1"><%= new Date(introPost.date).toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' }) %></p>
+            </div>
+
+            <div class="inline-flex items-center gap-1 text-sm text-primary-600 dark:text-primary-400 font-medium group-hover:translate-x-1 transition-transform">
+              <%= categoryText.enter_category || '进入分类' %>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </div>
+          </div>
+        </a>
+      <% }); %>
+    </div>
+  <% } else { %>
+    <div class="rounded-2xl border border-dashed border-gray-300 dark:border-gray-600 p-8 text-center text-gray-600 dark:text-gray-300 bg-white/70 dark:bg-gray-800/70">
+      <%= categoryText.empty_hint || '暂无可展示的分类封面文章，请为分类添加后缀为 -intro 的文章。' %>
+    </div>
+  <% } %>
+<% } else { %>
+  <div class="mb-6">
+    <a href="<%- url_for('/categories/') %>" class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+      <%= categoryText.back_to_categories || '返回分类页' %>
+    </a>
+  </div>
+
+  <% if (categoryPosts && categoryPosts.length > 0) { %>
+    <div class="space-y-4">
+      <% categoryPosts.forEach(function(post) { %>
+        <div class="relative">
+          <% if (akari_is_intro_post(post)) { %>
+            <span class="absolute -top-2 left-4 z-10 px-2 py-0.5 rounded-full text-xs font-bold bg-gradient-to-r from-primary-500 to-secondary-500 text-white">
+              <%= categoryText.intro_badge || '封面文章' %>
+            </span>
+          <% } %>
+          <%- partial('partial/post-card', { post: post }) %>
+        </div>
+      <% }); %>
+    </div>
+  <% } else { %>
+    <div class="rounded-2xl border border-dashed border-gray-300 dark:border-gray-600 p-8 text-center text-gray-600 dark:text-gray-300 bg-white/70 dark:bg-gray-800/70">
+      <%= categoryText.empty_posts || '该分类下暂无文章。' %>
+    </div>
+  <% } %>
+<% } %>

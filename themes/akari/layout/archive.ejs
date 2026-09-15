@@ -1,57 +1,46 @@
+<%#
+  Archive listing. Rendered inside the <main> of layout.ejs.
+%>
 <%
 const akari = akari_config();
-const siteTitle = akari.site?.title || config.title || 'Hexo';
 const archiveText = akari.ui?.archive || {};
 const locale = akari.site?.language || config.language || 'zh-CN';
 %>
 
-<!DOCTYPE html>
-<html lang="<%- typeof language !== 'undefined' ? language : 'zh-CN' %>">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title><%= archiveText.page_title || '归档' %> | <%= siteTitle %></title>
-  <link rel="icon" type="image/svg+xml" href="<%- url_for('/img/favicon.svg') %>">
-  <%# Tailwind, compiled locally by `npm run build:css` from tailwind.config.js
-      and themes/akari/assets/tokens.css. This replaced a render-blocking script
-      from the Tailwind CDN, which is unreachable from mainland China and
-      compiled CSS in the browser at runtime. Do not reintroduce it. %>
-  <link rel="stylesheet" href="<%- url_for('/css/tailwind.css') %>">
-  <link rel="stylesheet" href="<%- url_for('/css/style.css') %>">
-</head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300" style="--background-image-api: url('<%= akari.home?.background_image?.api || 'https://uapis.cn/api/v1/random/image?category=landscape' %>');">
-
-<div class="min-h-screen">
-  <%- partial('partial/header') %>
-
-  <main class="container mx-auto px-4 py-8 max-w-4xl">
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold mb-2 bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent"><%= archiveText.title || '文章归档' %></h1>
-      <p class="text-gray-600 dark:text-gray-400"><%= archiveText.subtitle || '记录每一刻的思考与成长' %></p>
-    </div>
-
-    <div class="space-y-8">
-      <% site.posts.sort('-date').forEach(function(post) { %>
-        <div class="relative pl-16 group">
-          <div class="absolute left-[13px] top-3 w-3 h-3 rounded-full bg-gradient-to-r from-primary-500 to-secondary-500 border-4 border-white dark:border-gray-800 shadow-lg group-hover:scale-125 transition-transform duration-200"></div>
-          <a href="<%- url_for(post.path) %>" class="block p-4 rounded-xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-700 hover:shadow-lg hover:shadow-primary-500/10 transition-all duration-200">
-            <div class="flex items-center justify-between gap-4">
-              <div class="flex-1 min-w-0">
-                <h3 class="text-lg font-bold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors truncate"><%= post.title %></h3>
-                <% if (post.excerpt) { %><p class="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-1"><%- post.excerpt.replace(/<[^>]*>/g, '') %></p><% } %>
-              </div>
-              <time class="flex-shrink-0 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap"><%= new Date(post.date).toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' }) %></time>
-            </div>
-          </a>
-        </div>
-      <% }); %>
-    </div>
-  </main>
-
-  <%- partial('partial/footer') %>
+<div class="mb-8">
+  <h1 class="text-3xl font-bold mb-2 bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent"><%= archiveText.title || '文章归档' %></h1>
+  <p class="text-gray-600 dark:text-gray-400"><%= archiveText.subtitle || '记录每一刻的思考与成长' %></p>
 </div>
 
-<script src="<%- url_for('/js/dark-mode.js') %>"></script>
-</body>
-</html>
+<%#
+  Newest first, as before. The tie-break on path keeps the order total: posts
+  sharing a date would otherwise be listed in whatever sequence the parallel
+  file reads completed, which is not stable across builds.
+%>
+<%
+const archivePosts = (site.posts && typeof site.posts.toArray === 'function' ? site.posts.toArray() : []);
+archivePosts.sort(function (a, b) {
+  const byDate = new Date(b.date) - new Date(a.date);
+  if (byDate !== 0) return byDate;
+  const pathA = String(a.path || '');
+  const pathB = String(b.path || '');
+  return pathA < pathB ? -1 : (pathA > pathB ? 1 : 0);
+});
+%>
+
+<div class="space-y-8">
+  <% archivePosts.forEach(function(post) { %>
+    <div class="relative pl-16 group">
+      <div class="absolute left-[13px] top-3 w-3 h-3 rounded-full bg-gradient-to-r from-primary-500 to-secondary-500 border-4 border-white dark:border-gray-800 shadow-lg group-hover:scale-125 transition-transform duration-200"></div>
+      <a href="<%- url_for(post.path) %>" class="block p-4 rounded-xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-700 hover:shadow-lg hover:shadow-primary-500/10 transition-all duration-200">
+        <div class="flex items-center justify-between gap-4">
+          <div class="flex-1 min-w-0">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors truncate"><%= post.title %></h3>
+            <% if (post.excerpt) { %><p class="text-sm text-gray-500 dark:text-gray-400 mt-1 line-clamp-1"><%- post.excerpt.replace(/<[^>]*>/g, '') %></p><% } %>
+          </div>
+          <time class="flex-shrink-0 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap"><%= new Date(post.date).toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' }) %></time>
+        </div>
+      </a>
+    </div>
+  <% }); %>
+</div>

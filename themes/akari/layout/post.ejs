@@ -1,11 +1,18 @@
+<%#
+  A single article. Rendered inside the <main> of layout.ejs, which supplies the
+  page shell, header, footer and scripts.
+
+  The duplicate `.prose` <style> block that used to live here has been deleted —
+  it restated rules already in source/css/style.css, with a few conflicting
+  values. The scroll-reveal <script> that used to be inlined at the bottom is now
+  source/js/reveal.js.
+%>
 <%
 const akari = akari_config();
-const siteTitle = akari.site?.title || config.title || 'Hexo';
-const siteDescription = page.excerpt || page.description || (page.content ? page.content.substring(0, 200).replace(/<[^>]*>/g, '') : '');
-const siteKeywords = page.tags ? akari_sort_terms(page.tags, 'name').map(function(t) { return t.name; }).join(',') : (Array.isArray(akari.site?.keywords) ? akari.site.keywords.join(',') : '');
 const commentsEnabled = akari.comment?.enable && page.comments !== false;
 const postText = akari.ui?.post || {};
 const locale = akari.site?.language || config.language || 'zh-CN';
+
 function toArray(collection) {
   if (!collection) return [];
   if (Array.isArray(collection)) return collection.slice();
@@ -13,9 +20,7 @@ function toArray(collection) {
 
   const arr = [];
   if (typeof collection.forEach === 'function') {
-    collection.forEach(function (item) {
-      arr.push(item);
-    });
+    collection.forEach(function (item) { arr.push(item); });
   }
   return arr;
 }
@@ -27,193 +32,122 @@ const currentLeafCategoryName = currentLeafCategoryNameRaw.includes('/')
   ? currentLeafCategoryNameRaw.split('/').filter(Boolean).pop()
   : currentLeafCategoryNameRaw;
 const isIntroPost = akari_is_intro_post(page);
-const categoryPosts = currentLeafCategory
-  ? toArray(site.posts).filter(function (post) {
-      const postCategories = toArray(post.categories);
-      if (!postCategories.length) return false;
-      const leaf = postCategories[postCategories.length - 1];
-      return String(leaf.path || '') === String(currentLeafCategory.path || '');
-    }).sort(function (a, b) {
-      return new Date(b.date) - new Date(a.date);
-    })
+
+/* Other posts sharing this article's leaf category.
+   This used to filter ALL of site.posts inside the template, once per post —
+   O(posts²) across a build. akari_related_posts builds the grouping once and
+   memoises it (see scripts/akari-config.js). */
+const categoryPostsWithoutCurrent = isIntroPost && currentLeafCategory
+  ? akari_related_posts(page)
   : [];
-const categoryPostsWithoutCurrent = categoryPosts.filter(function (post) {
-  return String(post.path || '') !== String(page.path || '');
-});
 %>
 
-<!DOCTYPE html>
-<html lang="<%- typeof language !== 'undefined' ? language : 'zh-CN' %>">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="description" content="<%= siteDescription %>">
-  <meta name="keywords" content="<%= siteKeywords %>">
-  <title><%= page.title %> | <%= siteTitle %></title>
-  <link rel="icon" type="image/svg+xml" href="<%- url_for('/img/favicon.svg') %>">
-  <%# Tailwind, compiled locally by `npm run build:css` from tailwind.config.js
-      and themes/akari/assets/tokens.css. This replaced a render-blocking script
-      from the Tailwind CDN, which is unreachable from mainland China and
-      compiled CSS in the browser at runtime. Do not reintroduce it. %>
-  <link rel="stylesheet" href="<%- url_for('/css/tailwind.css') %>">
-  <link rel="stylesheet" href="<%- url_for('/css/style.css') %>">
-  <style>
-    .prose { line-height: 1.8; }
-    .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 { font-weight: 700; line-height: 1.3; margin-top: 1.5em; margin-bottom: 0.75em; color: inherit; }
-    .prose h1 { font-size: 2em; } .prose h2 { font-size: 1.5em; } .prose h3 { font-size: 1.25em; }
-    .prose p { margin-bottom: 1em; }
-    .prose a { color: #d675ff; text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.2s; }
-    .prose a:hover { border-bottom-color: #d675ff; }
-    .dark .prose a { color: #c4b5fd; }
-    .prose img { max-width: 100%; height: auto; margin: 1em auto; border-radius: 12px; display: block; }
-    .prose blockquote { border-left: 4px solid #d675ff; padding-left: 1em; margin: 1em 0; font-style: italic; color: #6b7280; }
-    .dark .prose blockquote { color: #9ca3af; }
-    .prose ul, .prose ol { margin: 1em 0; padding-left: 1.5em; }
-    .prose li { margin: 0.5em 0; }
-    .prose table { width: 100%; border-collapse: collapse; margin: 1em 0; }
-    .prose th, .prose td { border: 1px solid #e5e7eb; padding: 0.75em; text-align: left; }
-    .dark .prose th, .dark .prose td { border-color: #374151; }
-    .prose th { background: rgba(214, 117, 255, 0.1); font-weight: 600; }
-  </style>
-</head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300" style="--background-image-api: url('<%= akari.home?.background_image?.api || 'https://uapis.cn/api/v1/random/image?category=landscape' %>');">
+<a href="<%- url_for('/') %>" class="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors mb-6 group">
+  <svg class="w-5 h-5 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+  <span class="font-medium"><%= postText.back || '返回' %></span>
+</a>
 
-<article class="min-h-screen">
-  <%- partial('partial/header') %>
+<div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-700">
+  <% if (page.cover && String(page.cover).trim()) { %>
+    <div class="aspect-[21/9] overflow-hidden">
+      <img src="<%= page.cover %>" alt="<%= page.title %>" class="w-full h-full object-cover" />
+    </div>
+  <% } %>
 
-  <main class="container mx-auto px-4 py-8 max-w-4xl">
-    <a href="<%- url_for('/') %>" class="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors mb-6 group">
-      <svg class="w-5 h-5 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-      <span class="font-medium"><%= postText.back || '返回' %></span>
-    </a>
+  <div class="p-6 sm:p-10">
+    <header class="mb-8">
+      <h1 class="text-3xl sm:text-4xl font-bold mb-4 bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent"><%= page.title %></h1>
 
-    <div class="bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-700">
-      <% if (page.cover || page.thumbnail) { %>
-        <div class="aspect-[21/9] overflow-hidden">
-          <img src="<%= page.cover || page.thumbnail %>" alt="<%= page.title %>" class="w-full h-full object-cover" />
-        </div>
-      <% } %>
+      <div class="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+        <time class="flex items-center gap-1.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+          <%= new Date(page.date).toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' }) %>
+        </time>
 
-      <div class="p-6 sm:p-10">
-        <header class="mb-8">
-          <h1 class="text-3xl sm:text-4xl font-bold mb-4 bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent"><%= page.title %></h1>
-
-          <div class="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-            <time class="flex items-center gap-1.5">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-              <%= new Date(page.date).toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' }) %>
-            </time>
-
-            <% if (page.categories && page.categories.length > 0) { %>
-              <div class="flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
-                <% akari_sort_terms(page.categories, 'name').forEach(function(cat) { %>
-                  <a href="<%- url_for(cat.path) %>" class="px-2.5 py-1 rounded-lg bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 hover:bg-primary-500 hover:text-white transition-colors"><%= cat.name %></a>
-                <% }); %>
-              </div>
-            <% } %>
-
-            <% if (page.tags && page.tags.length > 0) { %>
-              <div class="flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
-                <% akari_sort_terms(page.tags, 'name').forEach(function(tag) { %>
-                  <a href="<%- url_for(tag.path) %>" class="px-2.5 py-1 rounded-lg bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-400 hover:bg-secondary-500 hover:text-white transition-colors"><%= tag.name %></a>
-                <% }); %>
-              </div>
-            <% } %>
-          </div>
-        </header>
-
-        <div class="prose prose-lg dark:prose-invert max-w-none">
-          <%- page.content %>
-        </div>
-
-        <% if (isIntroPost && currentLeafCategory && categoryPostsWithoutCurrent.length > 0) { %>
-          <section class="mt-10 rounded-2xl border border-primary-100 dark:border-primary-800 bg-gradient-to-br from-primary-50/70 to-secondary-50/70 dark:from-primary-900/20 dark:to-secondary-900/20 p-5 sm:p-6">
-            <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-5">
-              <div>
-                <h2 class="text-xl font-bold text-gray-900 dark:text-white">继续阅读：<%= currentLeafCategoryName || currentLeafCategory.name %> 分类</h2>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">从导读直达该分类下的全部文章</p>
-              </div>
-              <a href="<%- url_for(currentLeafCategory.path) %>" class="inline-flex items-center gap-1 text-sm font-medium text-primary-600 dark:text-primary-400 hover:translate-x-1 transition-transform">
-                查看完整分类页
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-              </a>
-            </div>
-
-            <div class="space-y-3">
-              <% categoryPostsWithoutCurrent.forEach(function(post) { %>
-                <a href="<%- url_for(post.path) %>" class="group block rounded-xl border border-gray-100 dark:border-gray-700 bg-white/90 dark:bg-gray-800/70 p-4 hover:border-primary-300 dark:hover:border-primary-700 hover:shadow-lg hover:shadow-primary-500/10 transition-all duration-200">
-                  <div class="flex items-start justify-between gap-3">
-                    <div>
-                      <h3 class="font-semibold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors line-clamp-1"><%= post.title %></h3>
-                      <p class="text-xs text-gray-500 dark:text-gray-400 mt-1"><%= new Date(post.date).toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' }) %></p>
-                    </div>
-                    <svg class="w-4 h-4 text-gray-400 group-hover:text-primary-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                  </div>
-                </a>
-              <% }); %>
-            </div>
-          </section>
-        <% } %>
-
-        <% if (page.prev || page.next) { %>
-          <div class="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <% if (page.prev) { %>
-              <a href="<%- url_for(page.prev.path) %>" class="group p-5 rounded-2xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 hover:border-primary-300 dark:hover:border-primary-700 transition-all duration-200">
-                <div class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2"><%= postText.prev_post || '上一篇' %></div>
-                <div class="font-semibold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 line-clamp-2"><%= page.prev.title %></div>
-              </a>
-            <% } %>
-            <% if (page.next) { %>
-              <a href="<%- url_for(page.next.path) %>" class="group p-5 rounded-2xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 hover:border-primary-300 dark:hover:border-primary-700 transition-all duration-200 sm:text-right">
-                <div class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2"><%= postText.next_post || '下一篇' %></div>
-                <div class="font-semibold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 line-clamp-2"><%= page.next.title %></div>
-              </a>
-            <% } %>
+        <% if (page.categories && page.categories.length > 0) { %>
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+            <% akari_sort_terms(page.categories, 'name').forEach(function(cat) { %>
+              <a href="<%- url_for(cat.path) %>" class="px-2.5 py-1 rounded-lg bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 hover:bg-primary-500 hover:text-white transition-colors"><%= cat.name %></a>
+            <% }); %>
           </div>
         <% } %>
 
-        <div class="mt-10 p-6 rounded-2xl bg-gradient-to-br from-primary-50 to-secondary-50 dark:from-primary-900/20 dark:to-secondary-900/20 border border-primary-100 dark:border-primary-800">
-          <div class="flex items-start gap-4">
-            <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center">
-              <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-            </div>
-            <div class="flex-1 text-sm">
-              <p class="text-gray-700 dark:text-gray-300 font-medium mb-2"><%= postText.permalink || '本文链接：' %><a href="<%- page.permalink %>" class="text-primary-600 dark:text-primary-400 break-all"><%- page.permalink %></a></p>
-              <p class="text-gray-600 dark:text-gray-400"><%= postText.copyright_prefix || '版权声明：本博客所有文章除特别声明外，均采用 ' %><a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" class="text-primary-600 dark:text-primary-400">CC BY-NC-SA 4.0</a><%= postText.copyright_suffix || ' 许可协议。转载请注明出处！' %></p>
-            </div>
+        <% if (page.tags && page.tags.length > 0) { %>
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+            <% akari_sort_terms(page.tags, 'name').forEach(function(tag) { %>
+              <a href="<%- url_for(tag.path) %>" class="px-2.5 py-1 rounded-lg bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-400 hover:bg-secondary-500 hover:text-white transition-colors"><%= tag.name %></a>
+            <% }); %>
           </div>
+        <% } %>
+      </div>
+    </header>
+
+    <div class="prose prose-lg dark:prose-invert max-w-none">
+      <%- page.content %>
+    </div>
+
+    <% if (isIntroPost && currentLeafCategory && categoryPostsWithoutCurrent.length > 0) { %>
+      <section class="mt-10 rounded-2xl border border-primary-100 dark:border-primary-800 bg-gradient-to-br from-primary-50/70 to-secondary-50/70 dark:from-primary-900/20 dark:to-secondary-900/20 p-5 sm:p-6">
+        <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-5">
+          <div>
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white">继续阅读：<%= currentLeafCategoryName || currentLeafCategory.name %> 分类</h2>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">从导读直达该分类下的全部文章</p>
+          </div>
+          <a href="<%- url_for(currentLeafCategory.path) %>" class="inline-flex items-center gap-1 text-sm font-medium text-primary-600 dark:text-primary-400 hover:translate-x-1 transition-transform">
+            查看完整分类页
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+          </a>
+        </div>
+
+        <div class="space-y-3">
+          <% categoryPostsWithoutCurrent.forEach(function(post) { %>
+            <a href="<%- url_for(post.path) %>" class="group block rounded-xl border border-gray-100 dark:border-gray-700 bg-white/90 dark:bg-gray-800/70 p-4 hover:border-primary-300 dark:hover:border-primary-700 hover:shadow-lg hover:shadow-primary-500/10 transition-all duration-200">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <h3 class="font-semibold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors line-clamp-1"><%= post.title %></h3>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-1"><%= new Date(post.date).toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' }) %></p>
+                </div>
+                <svg class="w-4 h-4 text-gray-400 group-hover:text-primary-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+              </div>
+            </a>
+          <% }); %>
+        </div>
+      </section>
+    <% } %>
+
+    <% if (page.prev || page.next) { %>
+      <div class="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <% if (page.prev) { %>
+          <a href="<%- url_for(page.prev.path) %>" class="group p-5 rounded-2xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 hover:border-primary-300 dark:hover:border-primary-700 transition-all duration-200">
+            <div class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2"><%= postText.prev_post || '上一篇' %></div>
+            <div class="font-semibold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 line-clamp-2"><%= page.prev.title %></div>
+          </a>
+        <% } %>
+        <% if (page.next) { %>
+          <a href="<%- url_for(page.next.path) %>" class="group p-5 rounded-2xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 hover:border-primary-300 dark:hover:border-primary-700 transition-all duration-200 sm:text-right">
+            <div class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2"><%= postText.next_post || '下一篇' %></div>
+            <div class="font-semibold text-gray-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 line-clamp-2"><%= page.next.title %></div>
+          </a>
+        <% } %>
+      </div>
+    <% } %>
+
+    <div class="mt-10 p-6 rounded-2xl bg-gradient-to-br from-primary-50 to-secondary-50 dark:from-primary-900/20 dark:to-secondary-900/20 border border-primary-100 dark:border-primary-800">
+      <div class="flex items-start gap-4">
+        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center">
+          <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+        </div>
+        <div class="flex-1 text-sm">
+          <p class="text-gray-700 dark:text-gray-300 font-medium mb-2"><%= postText.permalink || '本文链接：' %><a href="<%- page.permalink %>" class="text-primary-600 dark:text-primary-400 break-all"><%- page.permalink %></a></p>
+          <p class="text-gray-600 dark:text-gray-400"><%= postText.copyright_prefix || '版权声明：本博客所有文章除特别声明外，均采用 ' %><a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" class="text-primary-600 dark:text-primary-400">CC BY-NC-SA 4.0</a><%= postText.copyright_suffix || ' 许可协议。转载请注明出处！' %></p>
         </div>
       </div>
     </div>
+  </div>
+</div>
 
-    <% if (commentsEnabled) { %>
-      <div class="mt-10"><%- partial('partial/comments') %></div>
-    <% } %>
-  </main>
-
-  <%- partial('partial/footer') %>
-  <%- partial('partial/music-player') %>
-</article>
-
-<script src="<%- url_for('/js/dark-mode.js') %>"></script>
-<script src="<%- url_for('/js/hover-tooltip.js') %>"></script>
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-        }
-      });
-    }, { threshold: 0.1 });
-    document.querySelectorAll('h1, h2, h3, h4, p, pre, blockquote').forEach(el => {
-      el.classList.add('animate-on-scroll');
-      observer.observe(el);
-    });
-  });
-</script>
-</body>
-</html>
+<% if (commentsEnabled) { %>
+  <div class="mt-10"><%- partial('partial/comments') %></div>
+<% } %>

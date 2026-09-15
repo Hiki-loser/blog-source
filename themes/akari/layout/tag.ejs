@@ -1,7 +1,12 @@
+<%#
+  Dual-mode: the tag index (/tags/, via source/tags/index.md front-matter
+  is_tag_index) renders a tag cloud; an individual tag page renders its posts.
+  Rendered inside the <main> of layout.ejs.
+%>
 <%
 const akari = akari_config();
-const siteTitle = akari.site?.title || config.title || 'Hexo';
 const tagText = akari.ui?.tag || {};
+
 function toPostArray(collection) {
   if (!collection) return [];
   if (Array.isArray(collection)) return collection.slice();
@@ -9,82 +14,57 @@ function toPostArray(collection) {
 
   const arr = [];
   if (typeof collection.forEach === 'function') {
-    collection.forEach(function (item) {
-      arr.push(item);
-    });
+    collection.forEach(function (item) { arr.push(item); });
   }
   return arr;
 }
+
 const isTagIndex = page?.is_tag_index || !page?.posts;
 const tagPosts = !isTagIndex && page?.posts
   ? toPostArray(page.posts).sort(function (a, b) {
-      return new Date(b.date) - new Date(a.date);
+      const byDate = new Date(b.date) - new Date(a.date);
+      if (byDate !== 0) return byDate;
+      // Total order — see archive.ejs for why a tie-break is needed.
+      const pathA = String(a.path || '');
+      const pathB = String(b.path || '');
+      return pathA < pathB ? -1 : (pathA > pathB ? 1 : 0);
     })
   : [];
 const currentTagName = String(page?.title || page?.tag || tagText.title || '标签');
 %>
 
-<!DOCTYPE html>
-<html lang="<%- typeof language !== 'undefined' ? language : 'zh-CN' %>">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title><%= isTagIndex ? (tagText.page_title || '标签') : currentTagName %> | <%= siteTitle %></title>
-  <link rel="icon" type="image/svg+xml" href="<%- url_for('/img/favicon.svg') %>">
-  <%# Tailwind, compiled locally by `npm run build:css` from tailwind.config.js
-      and themes/akari/assets/tokens.css. This replaced a render-blocking script
-      from the Tailwind CDN, which is unreachable from mainland China and
-      compiled CSS in the browser at runtime. Do not reintroduce it. %>
-  <link rel="stylesheet" href="<%- url_for('/css/tailwind.css') %>">
-  <link rel="stylesheet" href="<%- url_for('/css/style.css') %>">
-</head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300" style="--background-image-api: url('<%= akari.home?.background_image?.api || 'https://uapis.cn/api/v1/random/image?category=landscape' %>');">
-
-<div class="min-h-screen">
-  <%- partial('partial/header') %>
-
-  <main class="container mx-auto px-4 py-8 max-w-4xl">
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold mb-2 bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent"><%= isTagIndex ? (tagText.title || '标签') : currentTagName %></h1>
-      <p class="text-gray-600 dark:text-gray-400"><%= isTagIndex ? (tagText.subtitle || '发现更多关键词') : (tagText.posts_title || '标签文章') %></p>
-    </div>
-
-    <% if (isTagIndex) { %>
-      <div class="flex flex-wrap gap-3">
-        <% akari_sort_terms(site.tags).forEach(function(tag) { %>
-          <a href="<%- url_for(tag.path) %>" class="group inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-secondary-100 to-accent-100 dark:from-secondary-900/30 dark:to-accent-900/30 border border-secondary-200 dark:border-secondary-800 hover:border-secondary-500 dark:hover:border-secondary-500 hover:shadow-lg hover:shadow-secondary-500/20 transition-all duration-200">
-            <svg class="w-5 h-5 text-secondary-500 group-hover:text-secondary-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
-            <span class="font-medium text-gray-900 dark:text-white group-hover:text-secondary-600 dark:group-hover:text-secondary-400 transition-colors"><%= tag.name %></span>
-            <span class="px-2 py-0.5 text-xs rounded-full bg-white/50 dark:bg-gray-900/30 text-gray-600 dark:text-gray-400"><%= tag.length %> <%= tagText.post_count_suffix || '篇' %></span>
-          </a>
-        <% }); %>
-      </div>
-    <% } else { %>
-      <div class="mb-6">
-        <a href="<%- url_for('/tags/') %>" class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-secondary-600 dark:hover:text-secondary-400 transition-colors">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-          <%= tagText.back_to_tags || '返回标签页' %>
-        </a>
-      </div>
-
-      <% if (tagPosts && tagPosts.length > 0) { %>
-        <div class="space-y-4">
-          <% tagPosts.forEach(function(post) { %>
-            <%- partial('partial/post-card', { post: post }) %>
-          <% }); %>
-        </div>
-      <% } else { %>
-        <div class="rounded-2xl border border-dashed border-gray-300 dark:border-gray-600 p-8 text-center text-gray-600 dark:text-gray-300 bg-white/70 dark:bg-gray-800/70">
-          <%= tagText.empty_posts || '该标签下暂无文章。' %>
-        </div>
-      <% } %>
-    <% } %>
-  </main>
-
-  <%- partial('partial/footer') %>
+<div class="mb-8">
+  <h1 class="text-3xl font-bold mb-2 bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent"><%= isTagIndex ? (tagText.title || '标签') : currentTagName %></h1>
+  <p class="text-gray-600 dark:text-gray-400"><%= isTagIndex ? (tagText.subtitle || '发现更多关键词') : (tagText.posts_title || '标签文章') %></p>
 </div>
 
-<script src="<%- url_for('/js/dark-mode.js') %>"></script>
-</body>
-</html>
+<% if (isTagIndex) { %>
+  <div class="flex flex-wrap gap-3">
+    <% akari_sort_terms(site.tags).forEach(function(tag) { %>
+      <a href="<%- url_for(tag.path) %>" class="group inline-flex items-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-secondary-100 to-accent-100 dark:from-secondary-900/30 dark:to-accent-900/30 border border-secondary-200 dark:border-secondary-800 hover:border-secondary-500 dark:hover:border-secondary-500 hover:shadow-lg hover:shadow-secondary-500/20 transition-all duration-200">
+        <svg class="w-5 h-5 text-secondary-500 group-hover:text-secondary-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+        <span class="font-medium text-gray-900 dark:text-white group-hover:text-secondary-600 dark:group-hover:text-secondary-400 transition-colors"><%= tag.name %></span>
+        <span class="px-2 py-0.5 text-xs rounded-full bg-white/50 dark:bg-gray-900/30 text-gray-600 dark:text-gray-400"><%= tag.length %> <%= tagText.post_count_suffix || '篇' %></span>
+      </a>
+    <% }); %>
+  </div>
+<% } else { %>
+  <div class="mb-6">
+    <a href="<%- url_for('/tags/') %>" class="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-secondary-600 dark:hover:text-secondary-400 transition-colors">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+      <%= tagText.back_to_tags || '返回标签页' %>
+    </a>
+  </div>
+
+  <% if (tagPosts && tagPosts.length > 0) { %>
+    <div class="space-y-4">
+      <% tagPosts.forEach(function(post) { %>
+        <%- partial('partial/post-card', { post: post }) %>
+      <% }); %>
+    </div>
+  <% } else { %>
+    <div class="rounded-2xl border border-dashed border-gray-300 dark:border-gray-600 p-8 text-center text-gray-600 dark:text-gray-300 bg-white/70 dark:bg-gray-800/70">
+      <%= tagText.empty_posts || '该标签下暂无文章。' %>
+    </div>
+  <% } %>
+<% } %>

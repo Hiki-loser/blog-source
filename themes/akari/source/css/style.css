@@ -326,6 +326,56 @@ body::before {
   color: #c4b5fd;
 }
 
+/*
+ * The rules below were previously in an inline <style> block in post.ejs, which
+ * restated most of the `.prose` rules above verbatim. Deleting that block was
+ * only safe for the parts genuinely duplicated here — image, list and table
+ * styling existed ONLY in the inline copy and would have silently regressed on
+ * the table-heavy posts. They live here now, so there is one place to change
+ * them and no per-page <style> to keep in sync.
+ */
+
+.prose img {
+  max-width: 100%;
+  height: auto;
+  margin: 1em auto;
+  border-radius: 12px;
+  display: block;
+}
+
+.prose ul,
+.prose ol {
+  margin: 1em 0;
+  padding-left: 1.5em;
+}
+
+.prose li {
+  margin: 0.5em 0;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+}
+
+.prose th,
+.prose td {
+  border: 1px solid #e5e7eb;
+  padding: 0.75em;
+  text-align: left;
+}
+
+.dark .prose th,
+.dark .prose td {
+  border-color: #374151;
+}
+
+.prose th {
+  background: rgba(214, 117, 255, 0.1);
+  font-weight: 600;
+}
+
 /* ========================================
    Inline Tooltip Hint
    ======================================== */

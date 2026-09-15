@@ -1,3 +1,10 @@
+/**
+ * Lazily-built map of leaf-category path -> posts in that category, shared by
+ * akari_related_posts. Memoised for the lifetime of the build; `hexo clean`
+ * starts a fresh process, so it can never go stale within a run.
+ */
+let relatedIndexCache = null;
+
 hexo.extend.helper.register('akari_config', function () {
   const categoriesData = (hexo.site && hexo.site.data && hexo.site.data.categories) || {};
   const siteConfig = hexo.config || {};
@@ -236,6 +243,70 @@ hexo.extend.helper.register('akari_is_intro_post', function (post) {
  * localeCompare: it has to be byte-identical on every machine regardless of
  * which ICU data the local Node was built with.
  */
+/**
+ * Posts sharing a given post's leaf category.
+ *
+ * post.ejs used to derive this by filtering ALL of site.posts inside the
+ * template, once per article — O(posts²) across a build. Here the grouping is
+ * built once and memoised for the rest of the run.
+ *
+ * Implemented as a lazily-memoised helper rather than a `before_generate` filter
+ * on purpose: a filter that mutates documents at before_generate does NOT
+ * survive, because Hexo re-materialises `locals` afterwards (verified — the
+ * property was absent on every document at after_generate). Hexo's own `prev` /
+ * `next` are assigned inside the post *generator*, on the very object that
+ * becomes `page`, which is why they persist. Rendering time is the one moment
+ * the data is guaranteed to be final and stable, so the cache is built there.
+ */
+hexo.extend.helper.register('akari_related_posts', function (post) {
+  if (!post) return [];
+
+  // Module-scoped so it survives across renders. `this` inside a helper is the
+  // per-render locals object, so memoising there would rebuild every time.
+  //
+  // NOTE: helpers are bound with `this` = the Locals instance
+  // (hexo/dist/theme/view.js: `helpers[key].bind(locals)`), and that instance is
+  // where `.site` lives (hexo/dist/hexo/index.js sets `this.site` on the Locals
+  // class, NOT on the Hexo object). `hexo.site` is undefined — a mistake the
+  // pre-existing helpers in this file make as well.
+  if (!relatedIndexCache) {
+    const site = (this && this.site) || {};
+    const model = site.posts || hexo.locals.get('posts') || [];
+    const all = typeof model.toArray === 'function' ? model.toArray() : [];
+    const byLeaf = new Map();
+
+    all.forEach((item) => {
+      const categories = item.categories && item.categories.length ? item.categories.toArray() : [];
+      if (!categories.length) return;
+      const leaf = categories[categories.length - 1];
+      const key = String(leaf.path || leaf.name || '');
+      if (!key) return;
+      if (!byLeaf.has(key)) byLeaf.set(key, []);
+      byLeaf.get(key).push(item);
+    });
+
+    byLeaf.forEach((list) => list.sort((a, b) => {
+      const byDate = new Date(b.date) - new Date(a.date);
+      if (byDate !== 0) return byDate;
+      const pathA = String(a.path || '');
+      const pathB = String(b.path || '');
+      return pathA < pathB ? -1 : (pathA > pathB ? 1 : 0);
+    }));
+
+    relatedIndexCache = byLeaf;
+  }
+
+  const categories = post.categories && post.categories.length ? post.categories.toArray() : [];
+  if (!categories.length) return [];
+
+  const leaf = categories[categories.length - 1];
+  const key = String(leaf.path || leaf.name || '');
+  if (!key) return [];
+
+  return (relatedIndexCache.get(key) || [])
+    .filter((other) => String(other.path || '') !== String(post.path || ''));
+});
+
 hexo.extend.helper.register('akari_sort_terms', function (collection, mode) {
   let list = [];
 

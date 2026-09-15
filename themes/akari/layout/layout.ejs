@@ -1,0 +1,147 @@
+<%#
+  themes/akari/layout/layout.ejs — the single base template.
+
+  This is the ONLY file in the theme containing <!DOCTYPE html>. Before it
+  existed, all six layouts (index, post, page, archive, category, tag) each
+  duplicated a complete <html><head>…</head><body> skeleton, so a change to the
+  head meant six edits and they had already drifted apart — description/keywords
+  meta were missing on archive pages entirely, `hover-tooltip.js` was loaded on
+  post+page but nowhere else, and the music player was mounted on the home page
+  only.
+
+  HOW THE WRAPPING WORKS (verified against hexo 8.1.1, not assumed):
+  Hexo sets `locals.layout = 'layout'` for every render, and View.render() falls
+  back to that when a layout declares no `layout` key of its own — none of the six
+  do. So this file wraps every page automatically: no generator changes, no
+  `layout: layout` front-matter. Deleting this file silently unwraps everything.
+  `partial()` sets `layout = false` explicitly, so partials are never wrapped.
+  Verified by rendering with a probe marker around the body output tag below:
+  the child's whole document landed between the markers, and exactly once per
+  page (not once per partial).
+
+  CHILDREN RENDER FIRST — their output arrives here as `body`. Per-page values
+  are read off `page`, which is the same object reference the child saw.
+
+  IMPORTANT: never put defaults in this file's front-matter. Hexo merges the
+  parent's front-matter LAST, so a default declared there would override every
+  child. Use `typeof x !== 'undefined' ? x : fallback` in the body instead.
+%>
+<%
+const akari = akari_config();
+const ui = akari.ui || {};
+const siteTitle = akari.site?.title || config.title || 'Hexo';
+
+/*
+ * Page kind, derived from the locals Hexo actually sets. Determined empirically
+ * by dumping `page` for every route type rather than guessing:
+ *   /, /page/2/        -> __index (no `layout` key at all)
+ *   /archives/**       -> archive
+ *   /tags/intro/       -> tag      (the tag name, as a string)
+ *   /categories/x/y/   -> category (the full path, as a string)
+ *   /tags/, /categories/ -> layout 'tag' / 'category' (these are source pages)
+ *   post               -> __post
+ *   /about/, /quiz/    -> __page
+ */
+const kind =
+  page.__post                ? 'post'         :
+  page.archive               ? 'archive'      :
+  page.tag                   ? 'termTag'      :
+  page.category              ? 'termCategory' :
+  page.layout === 'tag'      ? 'tagIndex'     :
+  page.layout === 'category' ? 'categoryIndex':
+  page.__index               ? 'home'         :
+  page.__page                ? 'page'         : 'default';
+
+/* Reproduces the exact <title> the six layouts used to emit individually. */
+let pageTitle = page.title || '';
+if (!pageTitle) {
+  if (kind === 'termTag') pageTitle = String(page.tag);
+  else if (kind === 'termCategory') pageTitle = String(page.category);
+  else if (kind === 'archive') pageTitle = ui.archive?.page_title || '归档';
+}
+const htmlTitle = (!pageTitle || kind === 'home') ? siteTitle : pageTitle + ' | ' + siteTitle;
+
+/* Page-level description/keywords where they exist, site-level otherwise.
+   Previously archive pages emitted neither. */
+const pageDescription = page.description || page.excerpt
+  || (page.content ? String(page.content).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 200) : '')
+  || akari.site?.description || config.description || '';
+const pageKeywords = page.tags && page.tags.length
+  ? akari_sort_terms(page.tags, 'name').map(function (t) { return t.name; }).join(',')
+  : (Array.isArray(akari.site?.keywords) ? akari.site.keywords.join(',') : '');
+
+/* The home page is wider than the reading-oriented pages. A child layout can
+   override with `main_class` in its front-matter. */
+const mainClass = typeof main_class !== 'undefined'
+  ? main_class
+  : (kind === 'home' ? 'max-w-7xl' : 'max-w-4xl');
+
+/* The reading pages carry the tooltip enhancer; list pages do not need it. */
+const needsTooltip = kind === 'post' || kind === 'page';
+%>
+
+<!DOCTYPE html>
+<html lang="<%= page.lang || config.language || 'zh-CN' %>">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="description" content="<%= pageDescription %>">
+  <meta name="keywords" content="<%= pageKeywords %>">
+
+  <title><%= htmlTitle %></title>
+
+  <link rel="icon" type="image/svg+xml" href="<%- url_for('/img/favicon.svg') %>">
+
+  <%#
+    Anti-FOUC. This MUST be inline and MUST run before the stylesheets, or a
+    reader whose preference is dark sees a light-themed first paint. Reproduces
+    dark-mode.js's initial logic, which otherwise only runs at the end of <body>
+    — i.e. after the browser has already painted. dark-mode.js re-applies the
+    same class later, so running twice is harmless.
+  %>
+  <script>
+    (function () {
+      try {
+        var pref = localStorage.getItem('akari-dark-mode') || 'auto';
+        if (pref === 'dark' || (pref === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      } catch (e) { /* private mode / storage disabled — fall back to light */ }
+    })();
+  </script>
+
+  <%#
+    Tailwind, compiled locally by `npm run build:css` from tailwind.config.js and
+    themes/akari/assets/tokens.css. This replaced a render-blocking script from
+    the Tailwind CDN, which is unreachable from mainland China and compiled CSS
+    in the browser at runtime. Do not reintroduce it.
+  %>
+  <link rel="stylesheet" href="<%- url_for('/css/tailwind.css') %>">
+  <link rel="stylesheet" href="<%- url_for('/css/style.css') %>">
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300" style="--background-image-api: url('<%= akari.home?.background_image?.api || 'https://uapis.cn/api/v1/random/image?category=landscape' %>');">
+
+<div class="min-h-screen">
+  <%- partial('partial/header') %>
+
+  <main class="container mx-auto px-4 py-8 <%= mainClass %>">
+    <%- body %>
+  </main>
+
+  <%- partial('partial/footer') %>
+
+  <% if (akari.music?.enable) { %>
+    <%- partial('partial/music-player') %>
+  <% } %>
+</div>
+
+<script src="<%- url_for('/js/dark-mode.js') %>"></script>
+<% if (needsTooltip) { %>
+<script src="<%- url_for('/js/hover-tooltip.js') %>"></script>
+<% } %>
+<% if (kind === 'post') { %>
+<script src="<%- url_for('/js/reveal.js') %>"></script>
+<% } %>
+</body>
+</html>
