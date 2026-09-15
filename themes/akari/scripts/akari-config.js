@@ -38,11 +38,23 @@ hexo.extend.helper.register('akari_config', function () {
         enable: true,
         api: 'https://uapis.cn/api/v1/random/image?category=acg&type=pc',
         alt_text: '每日 ACG 美图',
-        refresh: true
+        refresh: true,
+        // Give up and show the placeholder if the image has not loaded in time.
+        // The API redirects twice to reach the file, so this has to allow for
+        // more than a single request would.
+        timeout: 8000,
+        // Honour the browser's data-saver / slow-connection signal. The image
+        // is 7680x4320; the download and the decode are both real costs.
+        skip_on_save_data: true
       },
       background_image: {
         enable: true,
-        api: 'https://uapis.cn/api/v1/random/image?category=landscape'
+        api: 'https://uapis.cn/api/v1/random/image?category=landscape',
+        // Home page only, and there is deliberately no cache_ttl option: this
+        // API's image cannot be cached by any client-side means. See the header
+        // of source/js/api-image.js for the tested reasons before adding one.
+        // It is scoped to the home page precisely because of that.
+        skip_on_save_data: true
       },
       stats: {
         enable: true

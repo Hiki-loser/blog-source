@@ -78,10 +78,29 @@ const mainClass = typeof main_class !== 'undefined'
 
 /* The reading pages carry the tooltip enhancer; list pages do not need it. */
 const needsTooltip = kind === 'post' || kind === 'page';
+
+/*
+ * The decorative backdrop image is HOME PAGE ONLY, and is applied by JS rather
+ * than declared in CSS.
+ *
+ * It used to be an inline `style="--background-image-api: url('…')"` on <body>
+ * of every layout, so each of the ~15 page types issued an uncached cross-origin
+ * request that redirects twice and returns a 484 KB, 7680x4320 WebP, just to
+ * render a layer at 10% opacity. That API cannot be cached by any client-side
+ * means — see the header of js/api-image.js for the tested reasons — so the
+ * lever is to stop paying for it on every page.
+ *
+ * Going through a script rather than CSS is solely about being able to honour
+ * the browser's data-saver signal, which costs one small file and skips a
+ * 484 KB download plus its 8K decode on metered connections.
+ */
+const backdrop = akari.home?.background_image || {};
+const backdropEnabled = kind === 'home' && backdrop.enable !== false && !!backdrop.api;
+const dailyImageEnabled = akari.home?.daily_image?.enable !== false && !!akari.home?.daily_image?.api;
 %>
 
 <!DOCTYPE html>
-<html lang="<%= page.lang || config.language || 'zh-CN' %>">
+<html lang="<%= page.lang || config.language || 'zh-CN' %>"<% if (backdropEnabled) { %> data-backdrop-api="<%= backdrop.api %>"<% } %>>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -120,7 +139,7 @@ const needsTooltip = kind === 'post' || kind === 'page';
   <link rel="stylesheet" href="<%- url_for('/css/tailwind.css') %>">
   <link rel="stylesheet" href="<%- url_for('/css/style.css') %>">
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300" style="--background-image-api: url('<%= akari.home?.background_image?.api || 'https://uapis.cn/api/v1/random/image?category=landscape' %>');">
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300">
 
 <div class="min-h-screen">
   <%- partial('partial/header') %>
@@ -142,6 +161,14 @@ const needsTooltip = kind === 'post' || kind === 'page';
 <% } %>
 <% if (kind === 'post') { %>
 <script src="<%- url_for('/js/reveal.js') %>"></script>
+<% } %>
+<% if (backdropEnabled || dailyImageEnabled) { %>
+<%# Shared cache/timeout helper for the third-party random-image API.
+    Loaded before its consumers; both are async and non-blocking. %>
+<script src="<%- url_for('/js/api-image.js') %>"></script>
+<% } %>
+<% if (backdropEnabled) { %>
+<script src="<%- url_for('/js/backdrop.js') %>"></script>
 <% } %>
 </body>
 </html>

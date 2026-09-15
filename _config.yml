@@ -146,9 +146,20 @@ akari:
       api: https://uapis.cn/api/v1/random/image?category=general_anime&type=pc
       alt_text: 每日 ACG 美图
       refresh: true
+      # 超过这个时间仍未加载完成就退化为占位图。默认 8 秒。
+      # 注意这个 API 要跳转两次才到图片，所以别设得太短。
+      timeout: 8000
+      # 命中浏览器的省流 / 慢速网络信号时直接跳过。
+      # 这张图是 7680x4320，下载和解码开销都很实在。
+      skip_on_save_data: true
     background_image:
       enable: true
       api: https://uapis.cn/api/v1/random/image?category=landscape
+      # 背景图现在只在首页加载（其余页面 0 请求）。
+      # 这里刻意没有 cache_ttl：这个 API 的图片无法被任何前端手段缓存，
+      # 原因（含实测依据）见 themes/akari/source/js/api-image.js 顶部注释，
+      # 想加缓存之前请先读那段。
+      skip_on_save_data: true
     stats:
       enable: true
   dark_mode:

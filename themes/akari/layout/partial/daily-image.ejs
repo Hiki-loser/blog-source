@@ -109,6 +109,8 @@ const fallbackSvg = 'data:image/svg+xml,' + encodeURIComponent(
     const imageApi = <%- JSON.stringify(dailyImageApi) %>
     const refreshSeparator = <%- JSON.stringify(refreshSeparator) %>
     const fallbackSvg = <%- JSON.stringify(fallbackSvg) %>
+    const imageLoadTimeout = <%= dailyImage.timeout || 8000 %>
+    const imageSkipOnSaveData = <%= dailyImage.skip_on_save_data !== false %>
     const imageEl = document.getElementById('<%= imageId %>')
     const refreshEl = document.getElementById('<%= refreshButtonId %>')
     const modalEl = document.getElementById('<%= modalId %>')
@@ -120,15 +122,6 @@ const fallbackSvg = 'data:image/svg+xml,' + encodeURIComponent(
       return
     }
 
-    let currentObjectUrl = ''
-
-    const revokeObjectUrl = () => {
-      if (currentObjectUrl) {
-        URL.revokeObjectURL(currentObjectUrl)
-        currentObjectUrl = ''
-      }
-    }
-
     const syncImageSource = () => {
       const currentUrl = imageEl.currentSrc || imageEl.src
       if (currentUrl) {
@@ -137,24 +130,23 @@ const fallbackSvg = 'data:image/svg+xml,' + encodeURIComponent(
       }
     }
 
-    const updateDownloadCache = async () => {
+    /*
+     * The download link points straight at the resolved image URL.
+     *
+     * This used to `fetch(targetUrl, { cache: 'force-cache' })` and convert the
+     * result to an object URL. That fetch could never succeed — the API's
+     * redirect target sends no Access-Control-Allow-Origin, so the request was
+     * always blocked and the catch branch did exactly what this does now.
+     * Removing it drops a guaranteed-failing cross-origin request per image
+     * load with no behaviour change.
+     *
+     * (Browsers ignore the `download` attribute on cross-origin URLs anyway, so
+     * the link opens rather than saves. Making it truly save would need a CORS
+     * header this host does not send.)
+     */
+    const updateDownloadLink = () => {
       const targetUrl = imageEl.currentSrc || imageEl.src
-      if (!targetUrl || targetUrl.startsWith('data:image/svg+xml')) {
-        downloadEl.href = targetUrl
-        return
-      }
-
-      try {
-        const response = await fetch(targetUrl, { cache: 'force-cache' })
-        if (!response.ok) {
-          throw new Error('download cache fetch failed')
-        }
-
-        const blob = await response.blob()
-        revokeObjectUrl()
-        currentObjectUrl = URL.createObjectURL(blob)
-        downloadEl.href = currentObjectUrl
-      } catch (_) {
+      if (targetUrl) {
         downloadEl.href = targetUrl
       }
     }
@@ -165,21 +157,20 @@ const fallbackSvg = 'data:image/svg+xml,' + encodeURIComponent(
       document.body.style.overflow = ''
     }
 
-    const openModal = async () => {
+    const openModal = () => {
       syncImageSource()
       modalEl.classList.remove('hidden')
       modalEl.classList.add('flex')
       document.body.style.overflow = 'hidden'
-      await updateDownloadCache()
+      updateDownloadLink()
     }
 
     imageEl.addEventListener('load', () => {
       syncImageSource()
-      updateDownloadCache()
+      updateDownloadLink()
     })
 
     imageEl.addEventListener('error', () => {
-      revokeObjectUrl()
       modalImageEl.src = fallbackSvg
       downloadEl.href = fallbackSvg
     })
@@ -189,9 +180,35 @@ const fallbackSvg = 'data:image/svg+xml,' + encodeURIComponent(
       openModal()
     })
 
+    /*
+     * Load through AkariApiImage so the request is time-bounded. The element
+     * already carries the API URL as its src, so the hero still appears without
+     * JS; this runs immediately after it in document order.
+     *
+     * There is no cache to prime here — this API's image genuinely cannot be
+     * reused (see the header of js/api-image.js). What this buys is the timeout
+     * and the data-saver skip.
+     */
+    if (window.AkariApiImage) {
+      window.AkariApiImage.attach(imageEl, imageApi, {
+        timeout: imageLoadTimeout,
+        skipOnSaveData: imageSkipOnSaveData
+      }).then((result) => {
+        // null means the wait timed out, the load failed, or the connection is
+        // metered. Show the placeholder rather than leaving the frame at
+        // opacity 0 forever, which is what a plain hang used to do.
+        if (!result) {
+          imageEl.dataset.fallbackApplied = 'true'
+          imageEl.src = fallbackSvg
+        }
+      }).catch(() => { /* an image failure is never the reader's problem */ })
+    }
+
     if (refreshEl) {
       refreshEl.addEventListener('click', (event) => {
         event.preventDefault()
+        // The API ignores caching anyway, but the cache-busting parameters make
+        // the intent explicit and sidestep any intermediary cache.
         const nextSrc = imageApi + refreshSeparator + 't=' + Date.now() + '&r=' + Math.random().toString(36).slice(2)
         imageEl.style.opacity = '0'
         imageEl.src = nextSrc
@@ -211,8 +228,6 @@ const fallbackSvg = 'data:image/svg+xml,' + encodeURIComponent(
         closeModal()
       }
     })
-
-    window.addEventListener('beforeunload', revokeObjectUrl)
 
     syncImageSource()
   })()

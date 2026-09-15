@@ -31,7 +31,15 @@ body {
   background: #111827;
 }
 
-/* Background image from API */
+/*
+ * Decorative backdrop.
+ *
+ * The fallback is deliberately `none`, not an API URL: this rule used to carry
+ * the random-image endpoint as its fallback, which meant CSS alone triggered a
+ * cross-origin request on every page. The URL is now set on <html> by
+ * js/backdrop.js after it has been resolved, cached and timeout-guarded — so
+ * with JS unavailable, blocked, or the API down, this layer simply stays empty.
+ */
 body::before {
   content: '';
   position: fixed;
@@ -39,7 +47,7 @@ body::before {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: var(--background-image-api, url('https://uapis.cn/api/v1/random/image?category=landscape'));
+  background-image: var(--background-image-api, none);
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
