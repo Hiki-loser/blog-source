@@ -42,7 +42,10 @@ const tags = akari_sort_terms(p.tags, 'name');
       <div class="flex items-center justify-between pt-2">
         <div class="flex items-center gap-2 flex-wrap">
           <% if (categories.length > 0) { %>
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400"><%= categories[0].name %></span>
+            <%# The leaf segment, via the shared resolver: category.name is the
+                FULL path, so rendering it raw showed "technology/python" next to
+                a sidebar that says "Python". %>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400"><%= akari_category_meta(categories[0].name).leafName %></span>
           <% } %>
           <% if (tags.length > 0) { %>
             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-400"><%= tags[0].name %></span>

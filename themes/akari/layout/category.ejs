@@ -69,7 +69,14 @@ const categoryCards = categoryCardsFromHelper && categoryCardsFromHelper.length 
 const categoryPosts = !isCategoryIndex && page?.posts
   ? toPostArray(page.posts).sort(byDateDesc)
   : [];
-const currentCategoryName = String(page?.title || page?.category || categoryText.title || '分类');
+// page.category is the FULL path ("technology/database"), which made the page
+// heading read as a raw slug. Prefer the leaf's display name.
+const currentCategoryName = String(
+  page?.title
+  || (page?.category ? akari_category_meta(page.category).leafName : '')
+  || categoryText.title
+  || '分类'
+);
 %>
 
 <div class="mb-8">
