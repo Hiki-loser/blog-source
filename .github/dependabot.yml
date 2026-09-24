@@ -20,3 +20,16 @@ updates:
         update-types:
           - minor
           - patch
+
+    # Tailwind is pinned to v3 on purpose (see the NOTE ON VERSIONS in
+    # tailwind.config.js). v4 drops `darkMode: 'class'`, moves the default
+    # palette to OKLCH and renames a long list of utilities, and it moves the
+    # PostCSS plugin out to `@tailwindcss/postcss` — so a major bump is not a
+    # dependency refresh, it is a build break: PR #2 merged exactly that bump
+    # and took the deploy down, because `postcss.config.js` requires the v3
+    # plugin directly. Suppressing the PR makes the migration a decision
+    # someone takes deliberately instead of a changelog line someone approves.
+    ignore:
+      - dependency-name: tailwindcss
+        update-types:
+          - version-update:semver-major
